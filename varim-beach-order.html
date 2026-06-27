@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Varim · доставка на пляж</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --water:#0c6b7e;        /* вода водохранилища */
+    --water-deep:#084a58;
+    --sand:#f3e7d2;         /* песок */
+    --sand-soft:#faf3e6;
+    --sun:#ff6a3d;          /* закатный коралл — акцент действия */
+    --sun-press:#e85128;
+    --ink:#241a12;          /* эспрессо */
+    --ink-soft:#6a5c4d;
+    --foam:#fffdf8;
+    --line:#e6d8c2;
+    --ok:#2f9e6f;
+    --r:18px;
+    --shadow:0 8px 30px rgba(36,26,18,.12);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:'Manrope',system-ui,sans-serif;
+    color:var(--ink); background:var(--sand-soft);
+    max-width:480px;margin:0 auto;min-height:100vh;
+    position:relative;padding-bottom:96px;
+  }
+  .screen{display:none}
+  .screen.active{display:block}
+
+  /* ---------- HEADER / лодочный мотив ---------- */
+  header{
+    background:linear-gradient(165deg,var(--water) 0%,var(--water-deep) 100%);
+    color:var(--foam);padding:22px 20px 56px;position:relative;overflow:hidden;
+  }
+  .brand{font-family:'Unbounded';font-weight:800;font-size:26px;letter-spacing:-.5px;display:flex;align-items:center;gap:8px}
+  .brand small{font-family:'Manrope';font-weight:600;font-size:11px;opacity:.7;letter-spacing:1.5px;text-transform:uppercase}
+  .tagline{font-size:14px;opacity:.88;margin-top:6px;font-weight:500}
+  .route{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-top:18px;font-size:12px;font-weight:600;letter-spacing:.5px;
+  }
+  .route .pin{background:rgba(255,255,255,.15);padding:6px 12px;border-radius:20px;backdrop-filter:blur(4px)}
+  .route .track{flex:1;height:2px;background:repeating-linear-gradient(90deg,rgba(255,255,255,.5) 0 7px,transparent 7px 13px);margin:0 10px;position:relative}
+  .route .boat{position:absolute;top:-12px;left:0;font-size:20px;animation:bob 2.4s ease-in-out infinite}
+  @keyframes bob{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-3px) rotate(3deg)}}
+  .wave{position:absolute;left:0;right:0;bottom:-1px;height:30px;display:block}
+
+  /* ---------- MENU ---------- */
+  main{padding:0 16px}
+  .cat{margin-top:22px}
+  .cat h2{font-family:'Unbounded';font-weight:600;font-size:15px;letter-spacing:.5px;margin:0 0 10px;color:var(--water-deep);text-transform:uppercase}
+  .item{
+    background:var(--foam);border:1px solid var(--line);border-radius:var(--r);
+    padding:14px 14px;margin-bottom:10px;display:flex;align-items:center;gap:12px;
+  }
+  .item .info{flex:1;min-width:0}
+  .item .nm{font-weight:700;font-size:15px}
+  .item .ds{font-size:12px;color:var(--ink-soft);margin-top:2px}
+  .item .pr{font-weight:700;font-size:15px;white-space:nowrap}
+  .stepper{display:flex;align-items:center;gap:0;background:var(--sand);border-radius:14px;overflow:hidden;flex-shrink:0}
+  .stepper button{width:34px;height:34px;border:0;background:transparent;font-size:20px;font-weight:700;color:var(--water-deep);cursor:pointer;line-height:1}
+  .stepper .qty{min-width:22px;text-align:center;font-weight:700;font-size:15px}
+  .add{
+    border:0;background:var(--water);color:var(--foam);font-weight:700;font-size:14px;
+    padding:9px 16px;border-radius:14px;cursor:pointer;font-family:'Manrope'
+  }
+  .add:active{transform:scale(.96)}
+
+  /* ---------- STICKY CART BAR ---------- */
+  .cartbar{
+    position:fixed;left:50%;transform:translateX(-50%);bottom:14px;width:calc(100% - 28px);max-width:452px;
+    background:var(--sun);color:#fff;border:0;border-radius:18px;padding:15px 20px;
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    font-family:'Manrope';font-weight:700;font-size:16px;cursor:pointer;box-shadow:var(--shadow);
+    transition:transform .15s, opacity .2s;
+  }
+  .cartbar:active{transform:translateX(-50%) scale(.985)}
+  .cartbar[disabled]{opacity:.4;pointer-events:none;background:var(--ink-soft)}
+  .cartbar .cnt{background:rgba(255,255,255,.25);border-radius:10px;padding:3px 9px;font-size:13px}
+
+  /* ---------- CHECKOUT ---------- */
+  .back{background:none;border:0;color:var(--foam);font-weight:600;font-size:14px;cursor:pointer;padding:0;margin-bottom:4px;display:flex;align-items:center;gap:4px}
+  .sec{margin-top:20px}
+  .sec h3{font-family:'Unbounded';font-weight:600;font-size:13px;letter-spacing:.5px;text-transform:uppercase;color:var(--water-deep);margin:0 0 10px}
+  .field{margin-bottom:12px}
+  .field label{display:block;font-size:12px;font-weight:600;color:var(--ink-soft);margin-bottom:5px}
+  .field input,.field textarea{
+    width:100%;border:1px solid var(--line);border-radius:13px;padding:13px 14px;
+    font-family:'Manrope';font-size:15px;background:var(--foam);color:var(--ink);
+  }
+  .field input:focus,.field textarea:focus{outline:none;border-color:var(--water)}
+  .zones{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .zone{
+    border:1.5px solid var(--line);border-radius:13px;padding:12px;background:var(--foam);
+    cursor:pointer;font-size:13px;font-weight:600;text-align:left;color:var(--ink);
+  }
+  .zone .ico{font-size:18px;display:block;margin-bottom:4px}
+  .zone.sel{border-color:var(--water);background:#eef7f8}
+  .pays{display:flex;gap:8px}
+  .pay{flex:1;border:1.5px solid var(--line);border-radius:13px;padding:12px;background:var(--foam);cursor:pointer;font-size:13px;font-weight:600;text-align:center;color:var(--ink)}
+  .pay.sel{border-color:var(--water);background:#eef7f8}
+  .summary{background:var(--foam);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-top:16px}
+  .srow{display:flex;justify-content:space-between;font-size:14px;padding:4px 0}
+  .srow.tot{font-weight:800;font-size:18px;border-top:1px dashed var(--line);margin-top:6px;padding-top:10px}
+  .checkout-pad{padding:20px 16px}
+
+  /* ---------- CONFIRMATION ---------- */
+  .confirm{padding:60px 24px;text-align:center}
+  .confirm h2{font-family:'Unbounded';font-weight:800;font-size:24px;margin:18px 0 6px}
+  .confirm p{color:var(--ink-soft);font-size:15px;line-height:1.5;margin:0 auto;max-width:300px}
+  .crossing{position:relative;height:70px;margin:10px 0 6px}
+  .crossing .sea{position:absolute;bottom:14px;left:0;right:0;height:3px;background:repeating-linear-gradient(90deg,var(--water) 0 8px,transparent 8px 16px);opacity:.4}
+  .crossing .boat2{position:absolute;bottom:18px;font-size:34px;animation:cross 2.6s ease-in-out forwards}
+  @keyframes cross{0%{left:-4%}100%{left:88%}}
+  .badge{display:inline-flex;align-items:center;gap:6px;background:#eafaf2;color:var(--ok);font-weight:700;font-size:13px;padding:7px 14px;border-radius:20px;margin-top:14px}
+  .eta{font-family:'Unbounded';font-weight:600;font-size:15px;color:var(--water-deep);margin-top:14px}
+  .ghost{margin-top:26px;border:1.5px solid var(--line);background:none;border-radius:14px;padding:13px 22px;font-family:'Manrope';font-weight:700;font-size:15px;color:var(--ink);cursor:pointer}
+
+  /* ---------- DEV PANEL ---------- */
+  details.dev{margin:26px 16px 10px;background:#1c2733;color:#cfe6ea;border-radius:14px;overflow:hidden;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  details.dev summary{padding:12px 16px;font-family:'Manrope';font-weight:700;font-size:13px;cursor:pointer;color:#7fd4e0;list-style:none}
+  details.dev summary::-webkit-details-marker{display:none}
+  details.dev pre{margin:0;padding:0 16px 16px;font-size:11px;line-height:1.5;white-space:pre-wrap;word-break:break-word;overflow-x:auto}
+  details.dev .lbl{color:#ffb38a;font-weight:700;display:block;margin:10px 0 4px;font-family:'Manrope';font-size:12px}
+  .foot{text-align:center;font-size:11px;color:var(--ink-soft);padding:14px;opacity:.7}
+</style>
+</head>
+<body>
+
+<!-- ===================== ЭКРАН 1: МЕНЮ ===================== -->
+<div class="screen active" id="screen-menu">
+  <header>
+    <div class="brand">varim <small>пляжная доставка</small></div>
+    <div class="tagline">Кофе с того берега. Привезём на лодке 🚤</div>
+    <div class="route">
+      <span class="pin">☕ Кофейня</span>
+      <span class="track"><span class="boat">🚤</span></span>
+      <span class="pin">🏖 Пляж</span>
+    </div>
+    <svg class="wave" viewBox="0 0 480 30" preserveAspectRatio="none"><path d="M0 18 Q60 4 120 18 T240 18 T360 18 T480 18 V30 H0 Z" fill="#faf3e6"/></svg>
+  </header>
+
+  <main id="menu"></main>
+
+  <details class="dev">
+    <summary>⚙️ Что улетает в СБИС и курьеру (для разработки)</summary>
+    <pre id="devout">Добавь что-нибудь в корзину и оформи заказ — здесь появится payload.</pre>
+  </details>
+  <div class="foot">Прототип Varim · меню и цены — болванка</div>
+
+  <button class="cartbar" id="cartbar" disabled onclick="goCheckout()">
+    <span>Оформить заказ</span>
+    <span><span class="cnt" id="cart-cnt">0</span> · <span id="cart-sum">0</span> ₽</span>
+  </button>
+</div>
+
+<!-- ===================== ЭКРАН 2: ОФОРМЛЕНИЕ ===================== -->
+<div class="screen" id="screen-checkout">
+  <header>
+    <button class="back" onclick="goMenu()">‹ Назад в меню</button>
+    <div class="brand" style="font-size:22px">Куда везти?</div>
+    <div class="tagline">Найдём тебя на пляже за пару минут</div>
+    <svg class="wave" viewBox="0 0 480 30" preserveAspectRatio="none"><path d="M0 18 Q60 4 120 18 T240 18 T360 18 T480 18 V30 H0 Z" fill="#faf3e6"/></svg>
+  </header>
+
+  <div class="checkout-pad">
+    <div class="sec">
+      <h3>Зона на пляже</h3>
+      <div class="zones" id="zones"></div>
+    </div>
+
+    <div class="sec">
+      <h3>Как тебя найти</h3>
+      <div class="field">
+        <label>Ориентир — что на тебе / зонт / компания</label>
+        <input id="landmark" placeholder="Напр.: синий зонт у вышки, нас трое">
+      </div>
+    </div>
+
+    <div class="sec">
+      <h3>Контакт</h3>
+      <div class="field">
+        <label>Имя</label>
+        <input id="name" placeholder="Как обращаться">
+      </div>
+      <div class="field">
+        <label>Телефон</label>
+        <input id="phone" type="tel" inputmode="tel" placeholder="+7 ___ ___-__-__">
+      </div>
+    </div>
+
+    <div class="sec">
+      <h3>Оплата курьеру</h3>
+      <div class="pays" id="pays">
+        <button class="pay sel" data-pay="card" onclick="selPay(this)">💳 Картой</button>
+        <button class="pay" data-pay="cash" onclick="selPay(this)">💵 Наличными</button>
+      </div>
+    </div>
+
+    <div class="sec">
+      <h3>Комментарий</h3>
+      <div class="field">
+        <textarea id="comment" rows="2" placeholder="Без сахара, погорячее и т.п."></textarea>
+      </div>
+    </div>
+
+    <div class="summary" id="summary"></div>
+  </div>
+
+  <button class="cartbar" id="sendbar" onclick="sendOrder()">
+    <span>Отправить заказ 🚤</span>
+    <span><span id="send-sum">0</span> ₽</span>
+  </button>
+</div>
+
+<!-- ===================== ЭКРАН 3: ГОТОВО ===================== -->
+<div class="screen" id="screen-done">
+  <div class="confirm">
+    <div class="crossing">
+      <div class="sea"></div>
+      <div class="boat2">🚤</div>
+    </div>
+    <div class="badge">✓ Заказ принят</div>
+    <h2>Лодка вышла!</h2>
+    <p>Бариста уже готовит. Курьер заберёт заказ и привезёт его на пляж.</p>
+    <div class="eta" id="eta">⏱ Ориентировочно 15–20 минут</div>
+    <button class="ghost" onclick="reset()">Заказать ещё</button>
+  </div>
+</div>
+
+<script>
+/* ====== МЕНЮ (болванка — sbisNom/priceListId подставишь из своей точки Presto) ====== */
+const MENU = [
+  { cat:"Горячий кофе", items:[
+    {id:"esp",   nm:"Эспрессо",    ds:"двойной",            pr:90,  sbisNom:"NOM-ESP",  priceListId:1001},
+    {id:"amer",  nm:"Американо",   ds:"",                   pr:120, sbisNom:"NOM-AMER", priceListId:1001},
+    {id:"capp",  nm:"Капучино",    ds:"300 мл",             pr:160, sbisNom:"NOM-CAPP", priceListId:1001},
+    {id:"latte", nm:"Латте",       ds:"350 мл",             pr:170, sbisNom:"NOM-LATTE",priceListId:1001},
+    {id:"raf",   nm:"Раф",         ds:"ванильный",          pr:190, sbisNom:"NOM-RAF",  priceListId:1001},
+  ]},
+  { cat:"Холодный / айс", items:[
+    {id:"icel",  nm:"Айс латте",   ds:"со льдом",           pr:190, sbisNom:"NOM-ICEL", priceListId:1001},
+    {id:"icea",  nm:"Айс американо",ds:"",                  pr:150, sbisNom:"NOM-ICEA", priceListId:1001},
+    {id:"bumble",nm:"Бамбл",       ds:"апельсин + эспрессо",pr:200, sbisNom:"NOM-BUMB", priceListId:1001},
+    {id:"cold",  nm:"Колд брю",    ds:"12 часов настоя",    pr:200, sbisNom:"NOM-COLD", priceListId:1001},
+  ]},
+  { cat:"Не кофе", items:[
+    {id:"matcha",nm:"Матча латте", ds:"",                   pr:210, sbisNom:"NOM-MAT",  priceListId:1001},
+    {id:"lemon", nm:"Лимонад",     ds:"классический, 400 мл",pr:160,sbisNom:"NOM-LEM",  priceListId:1001},
+    {id:"cocoa", nm:"Какао",       ds:"",                   pr:150, sbisNom:"NOM-COC",  priceListId:1001},
+  ]},
+  { cat:"К кофе", items:[
+    {id:"croiss",nm:"Круассан",    ds:"сливочный",          pr:130, sbisNom:"NOM-CRO",  priceListId:1001},
+    {id:"cookie",nm:"Печенье",     ds:"овсяное",            pr:90,  sbisNom:"NOM-CK",   priceListId:1001},
+  ]},
+];
+
+const ZONES = [
+  {id:"vyshka", ico:"🛟", nm:"Главный пляж — у вышки"},
+  {id:"pier",   ico:"⚓", nm:"Пирс / лодочная"},
+  {id:"left",   ico:"🌾", nm:"Левый берег, камыши"},
+  {id:"other",  ico:"📍", nm:"Другое (укажу в ориентире)"},
+];
+
+/* СБИС: id точки продаж Varim (получить запросом «Получить точку продаж») */
+const SBIS_POINT_ID = 0; // <-- подставить
+
+const ITEM = {};
+MENU.forEach(c=>c.items.forEach(i=>ITEM[i.id]={...i,qty:0}));
+let zone = null, pay = "card";
+
+/* ---------- РЕНДЕР МЕНЮ ---------- */
+function renderMenu(){
+  document.getElementById("menu").innerHTML = MENU.map(c=>`
+    <div class="cat">
+      <h2>${c.cat}</h2>
+      ${c.items.map(i=>`
+        <div class="item">
+          <div class="info">
+            <div class="nm">${i.nm}</div>
+            ${i.ds?`<div class="ds">${i.ds}</div>`:""}
+          </div>
+          <div class="pr">${i.pr} ₽</div>
+          ${ITEM[i.id].qty>0
+            ? `<div class="stepper">
+                 <button onclick="chg('${i.id}',-1)">−</button>
+                 <span class="qty">${ITEM[i.id].qty}</span>
+                 <button onclick="chg('${i.id}',1)">+</button>
+               </div>`
+            : `<button class="add" onclick="chg('${i.id}',1)">+</button>`}
+        </div>`).join("")}
+    </div>`).join("");
+}
+function chg(id,d){ ITEM[id].qty=Math.max(0,ITEM[id].qty+d); renderMenu(); updateCart(); }
+
+function cartItems(){ return Object.values(ITEM).filter(i=>i.qty>0); }
+function cartSum(){ return cartItems().reduce((s,i)=>s+i.pr*i.qty,0); }
+function cartCnt(){ return cartItems().reduce((s,i)=>s+i.qty,0); }
+
+function updateCart(){
+  const cnt=cartCnt(), sum=cartSum();
+  document.getElementById("cart-cnt").textContent=cnt;
+  document.getElementById("cart-sum").textContent=sum;
+  document.getElementById("cartbar").disabled = cnt===0;
+  buildDev();
+}
+
+/* ---------- ЭКРАНЫ ---------- */
+function show(id){ document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active")); document.getElementById(id).classList.add("active"); window.scrollTo(0,0); }
+function goMenu(){ show("screen-menu"); }
+function goCheckout(){ renderZones(); renderSummary(); show("screen-checkout"); }
+
+function renderZones(){
+  document.getElementById("zones").innerHTML = ZONES.map(z=>`
+    <button class="zone ${zone===z.id?'sel':''}" onclick="selZone('${z.id}')">
+      <span class="ico">${z.ico}</span>${z.nm}
+    </button>`).join("");
+}
+function selZone(id){ zone=id; renderZones(); }
+function selPay(el){ pay=el.dataset.pay; document.querySelectorAll('.pay').forEach(p=>p.classList.remove('sel')); el.classList.add('sel'); buildDev(); }
+
+function renderSummary(){
+  const rows = cartItems().map(i=>`<div class="srow"><span>${i.nm} × ${i.qty}</span><span>${i.pr*i.qty} ₽</span></div>`).join("");
+  document.getElementById("summary").innerHTML = rows + `<div class="srow tot"><span>Итого</span><span>${cartSum()} ₽</span></div>`;
+  document.getElementById("send-sum").textContent = cartSum();
+}
+
+/* ---------- ОТПРАВКА ---------- */
+function sendOrder(){
+  const name=document.getElementById("name").value.trim();
+  const phone=document.getElementById("phone").value.trim();
+  if(!zone){ alert("Выбери зону на пляже"); return; }
+  if(!name||!phone){ alert("Заполни имя и телефон — без них курьер не найдёт"); return; }
+
+  /* В проде: fetch(БЭКЕНД, {method:'POST', body: JSON.stringify(buildPayload())})
+     Бэкенд → СБИС api.sbis.ru/retail/order/create + Telegram курьеру.
+     Здесь — демо: показываем подтверждение. */
+  show("screen-done");
+  const b=document.querySelector(".boat2"); b.style.animation="none"; void b.offsetWidth; b.style.animation="cross 2.6s ease-in-out forwards";
+}
+
+function buildPayload(){
+  const z = ZONES.find(x=>x.id===zone);
+  const landmark=document.getElementById("landmark").value.trim();
+  const comment=document.getElementById("comment").value.trim();
+  const fullComment=[`Пляж: ${z?z.nm:"—"}`, landmark&&`Ориентир: ${landmark}`, comment].filter(Boolean).join(". ");
+  const now=new Date();
+  const dt=now.toISOString().slice(0,10)+" "+now.toTimeString().slice(0,8);
+  return {
+    product:"delivery",
+    pointId:SBIS_POINT_ID,
+    comment:fullComment,
+    customer:{ name:document.getElementById("name").value.trim()||"Гость", phone:document.getElementById("phone").value.trim()||"—" },
+    datetime:dt,
+    nomenclatures: cartItems().map(i=>({ nomNumber:i.sbisNom, priceListId:i.priceListId, count:i.qty, cost:i.pr, name:i.nm })),
+    delivery:{ isPickup:false, paymentType:pay, persons:1 }
+  };
+}
+
+function telegramText(){
+  const p=buildPayload();
+  const lines=p.nomenclatures.map(n=>`• ${n.name} ×${n.count} — ${n.cost*n.count}₽`).join("\n");
+  const sum=p.nomenclatures.reduce((s,n)=>s+n.cost*n.count,0);
+  return `🚤 НОВЫЙ ЗАКАЗ НА ПЛЯЖ\n\n${lines}\n\nИтого: ${sum}₽ · оплата: ${pay==="card"?"картой":"наличными"} курьеру\n${p.comment}\n☎ ${p.customer.name}, ${p.customer.phone}`;
+}
+
+function buildDev(){
+  const out=document.getElementById("devout");
+  if(cartCnt()===0){ out.textContent="Добавь что-нибудь в корзину и оформи заказ — здесь появится payload."; return; }
+  out.innerHTML =
+    `<span class="lbl">POST https://api.sbis.ru/retail/order/create</span>`+
+    `<span class="lbl">header: X-SBISAccessToken: &lt;токен сервисной авторизации&gt;</span>`+
+    JSON.stringify(buildPayload(),null,2)+
+    `\n\n`+`<span class="lbl">Telegram курьеру (Bot API sendMessage):</span>`+
+    telegramText();
+}
+
+function reset(){
+  Object.values(ITEM).forEach(i=>i.qty=0);
+  zone=null; pay="card";
+  document.getElementById("name").value="";
+  document.getElementById("phone").value="";
+  document.getElementById("landmark").value="";
+  document.getElementById("comment").value="";
+  renderMenu(); updateCart(); goMenu();
+}
+
+renderMenu(); updateCart();
+</script>
+</body>
+</html>
