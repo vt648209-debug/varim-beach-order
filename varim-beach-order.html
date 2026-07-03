@@ -33,7 +33,6 @@
   }
   .screen{display:none}
   .screen.active{display:block}
-
   /* ---------- HEADER / лодочный мотив ---------- */
   header{
     background:linear-gradient(165deg,var(--water) 0%,var(--water-deep) 100%);
@@ -51,7 +50,6 @@
   .route .boat{position:absolute;top:-12px;left:0;font-size:20px;animation:bob 2.4s ease-in-out infinite}
   @keyframes bob{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-3px) rotate(3deg)}}
   .wave{position:absolute;left:0;right:0;bottom:-1px;height:30px;display:block}
-
   /* ---------- MENU ---------- */
   main{padding:0 16px}
   .cat{margin-top:22px}
@@ -72,7 +70,6 @@
     padding:9px 16px;border-radius:14px;cursor:pointer;font-family:'Manrope'
   }
   .add:active{transform:scale(.96)}
-
   /* ---------- STICKY CART BAR ---------- */
   .cartbar{
     position:fixed;left:50%;transform:translateX(-50%);bottom:14px;width:calc(100% - 28px);max-width:452px;
@@ -84,7 +81,6 @@
   .cartbar:active{transform:translateX(-50%) scale(.985)}
   .cartbar[disabled]{opacity:.4;pointer-events:none;background:var(--ink-soft)}
   .cartbar .cnt{background:rgba(255,255,255,.25);border-radius:10px;padding:3px 9px;font-size:13px}
-
   /* ---------- CHECKOUT ---------- */
   .back{background:none;border:0;color:var(--foam);font-weight:600;font-size:14px;cursor:pointer;padding:0;margin-bottom:4px;display:flex;align-items:center;gap:4px}
   .sec{margin-top:20px}
@@ -110,7 +106,6 @@
   .srow{display:flex;justify-content:space-between;font-size:14px;padding:4px 0}
   .srow.tot{font-weight:800;font-size:18px;border-top:1px dashed var(--line);margin-top:6px;padding-top:10px}
   .checkout-pad{padding:20px 16px}
-
   /* ---------- CONFIRMATION ---------- */
   .confirm{padding:60px 24px;text-align:center}
   .confirm h2{font-family:'Unbounded';font-weight:800;font-size:24px;margin:18px 0 6px}
@@ -122,7 +117,6 @@
   .badge{display:inline-flex;align-items:center;gap:6px;background:#eafaf2;color:var(--ok);font-weight:700;font-size:13px;padding:7px 14px;border-radius:20px;margin-top:14px}
   .eta{font-family:'Unbounded';font-weight:600;font-size:15px;color:var(--water-deep);margin-top:14px}
   .ghost{margin-top:26px;border:1.5px solid var(--line);background:none;border-radius:14px;padding:13px 22px;font-family:'Manrope';font-weight:700;font-size:15px;color:var(--ink);cursor:pointer}
-
   /* ---------- DEV PANEL ---------- */
   details.dev{margin:26px 16px 10px;background:#1c2733;color:#cfe6ea;border-radius:14px;overflow:hidden;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
   details.dev summary{padding:12px 16px;font-family:'Manrope';font-weight:700;font-size:13px;cursor:pointer;color:#7fd4e0;list-style:none}
@@ -146,15 +140,12 @@
     </div>
     <svg class="wave" viewBox="0 0 480 30" preserveAspectRatio="none"><path d="M0 18 Q60 4 120 18 T240 18 T360 18 T480 18 V30 H0 Z" fill="#faf3e6"/></svg>
   </header>
-
   <main id="menu"></main>
-
   <details class="dev">
     <summary>⚙️ Что улетает в СБИС и курьеру (для разработки)</summary>
     <pre id="devout">Добавь что-нибудь в корзину и оформи заказ — здесь появится payload.</pre>
   </details>
   <div class="foot">Прототип Varim · меню и цены — болванка</div>
-
   <button class="cartbar" id="cartbar" disabled onclick="goCheckout()">
     <span>Оформить заказ</span>
     <span><span class="cnt" id="cart-cnt">0</span> · <span id="cart-sum">0</span> ₽</span>
@@ -169,13 +160,11 @@
     <div class="tagline">Найдём тебя на пляже за пару минут</div>
     <svg class="wave" viewBox="0 0 480 30" preserveAspectRatio="none"><path d="M0 18 Q60 4 120 18 T240 18 T360 18 T480 18 V30 H0 Z" fill="#faf3e6"/></svg>
   </header>
-
   <div class="checkout-pad">
     <div class="sec">
       <h3>Зона на пляже</h3>
       <div class="zones" id="zones"></div>
     </div>
-
     <div class="sec">
       <h3>Как тебя найти</h3>
       <div class="field">
@@ -183,7 +172,6 @@
         <input id="landmark" placeholder="Напр.: синий зонт у вышки, нас трое">
       </div>
     </div>
-
     <div class="sec">
       <h3>Контакт</h3>
       <div class="field">
@@ -195,7 +183,6 @@
         <input id="phone" type="tel" inputmode="tel" placeholder="+7 ___ ___-__-__">
       </div>
     </div>
-
     <div class="sec">
       <h3>Оплата курьеру</h3>
       <div class="pays" id="pays">
@@ -203,17 +190,14 @@
         <button class="pay" data-pay="cash" onclick="selPay(this)">💵 Наличными</button>
       </div>
     </div>
-
     <div class="sec">
       <h3>Комментарий</h3>
       <div class="field">
         <textarea id="comment" rows="2" placeholder="Без сахара, погорячее и т.п."></textarea>
       </div>
     </div>
-
     <div class="summary" id="summary"></div>
   </div>
-
   <button class="cartbar" id="sendbar" onclick="sendOrder()">
     <span>Отправить заказ 🚤</span>
     <span><span id="send-sum">0</span> ₽</span>
@@ -236,29 +220,55 @@
 </div>
 
 <script>
-/* ====== МЕНЮ (болванка — sbisNom/priceListId подставишь из своей точки Presto) ====== */
+/* ====== МЕНЮ «Белая Холуница · у водохранилища · лето 2025» ======
+   sbisNom/priceListId — болванки, подставишь из своей точки Presto («Получить меню»).
+   ⚠ в ds = позиции, которые плохо читались на фото (рукописные) — проверь. */
+
 const MENU = [
-  { cat:"Горячий кофе", items:[
-    {id:"esp",   nm:"Эспрессо",    ds:"двойной",            pr:90,  sbisNom:"NOM-ESP",  priceListId:1001},
-    {id:"amer",  nm:"Американо",   ds:"",                   pr:120, sbisNom:"NOM-AMER", priceListId:1001},
-    {id:"capp",  nm:"Капучино",    ds:"300 мл",             pr:160, sbisNom:"NOM-CAPP", priceListId:1001},
-    {id:"latte", nm:"Латте",       ds:"350 мл",             pr:170, sbisNom:"NOM-LATTE",priceListId:1001},
-    {id:"raf",   nm:"Раф",         ds:"ванильный",          pr:190, sbisNom:"NOM-RAF",  priceListId:1001},
+  { cat:"Эспрессо-бар", items:[
+    {id:"esp2",  nm:"Эспрессо двойной", ds:"",  pr:119, sbisNom:"NOM-ESP2", priceListId:1001},
+    {id:"amerS", nm:"Американо S",      ds:"",  pr:129, sbisNom:"NOM-AMERS",priceListId:1001},
+    {id:"amerM", nm:"Американо M",      ds:"",  pr:149, sbisNom:"NOM-AMERM",priceListId:1001},
+    {id:"amerL", nm:"Американо L",      ds:"",  pr:169, sbisNom:"NOM-AMERL",priceListId:1001},
   ]},
-  { cat:"Холодный / айс", items:[
-    {id:"icel",  nm:"Айс латте",   ds:"со льдом",           pr:190, sbisNom:"NOM-ICEL", priceListId:1001},
-    {id:"icea",  nm:"Айс американо",ds:"",                  pr:150, sbisNom:"NOM-ICEA", priceListId:1001},
-    {id:"bumble",nm:"Бамбл",       ds:"апельсин + эспрессо",pr:200, sbisNom:"NOM-BUMB", priceListId:1001},
-    {id:"cold",  nm:"Колд брю",    ds:"12 часов настоя",    pr:200, sbisNom:"NOM-COLD", priceListId:1001},
+  { cat:"Классические кофейные", items:[
+    {id:"cappS", nm:"Капучино S",   ds:"", pr:169, sbisNom:"NOM-CAPPS", priceListId:1001},
+    {id:"cappM", nm:"Капучино M",   ds:"", pr:219, sbisNom:"NOM-CAPPM", priceListId:1001},
+    {id:"cappL", nm:"Капучино L",   ds:"", pr:249, sbisNom:"NOM-CAPPL", priceListId:1001},
+    {id:"latteM",nm:"Латте M",      ds:"", pr:219, sbisNom:"NOM-LATTEM",priceListId:1001},
+    {id:"latteL",nm:"Латте L",      ds:"", pr:249, sbisNom:"NOM-LATTEL",priceListId:1001},
+    {id:"flatS", nm:"Флэт уайт S",  ds:"", pr:219, sbisNom:"NOM-FLATS", priceListId:1001},
   ]},
-  { cat:"Не кофе", items:[
-    {id:"matcha",nm:"Матча латте", ds:"",                   pr:210, sbisNom:"NOM-MAT",  priceListId:1001},
-    {id:"lemon", nm:"Лимонад",     ds:"классический, 400 мл",pr:160,sbisNom:"NOM-LEM",  priceListId:1001},
-    {id:"cocoa", nm:"Какао",       ds:"",                   pr:150, sbisNom:"NOM-COC",  priceListId:1001},
+  { cat:"Кофе 18+", items:[
+    {id:"c18M",  nm:"Кофе 18+ M",   ds:"⚠ уточни название напитка", pr:299, sbisNom:"NOM-C18M", priceListId:1001},
+    {id:"c18L",  nm:"Кофе 18+ L",   ds:"⚠ уточни название напитка", pr:349, sbisNom:"NOM-C18L", priceListId:1001},
   ]},
-  { cat:"К кофе", items:[
-    {id:"croiss",nm:"Круассан",    ds:"сливочный",          pr:130, sbisNom:"NOM-CRO",  priceListId:1001},
-    {id:"cookie",nm:"Печенье",     ds:"овсяное",            pr:90,  sbisNom:"NOM-CK",   priceListId:1001},
+  { cat:"Летние напитки и лимонады", items:[
+    {id:"etM",   nm:"Эспрессо-тоник M",     ds:"", pr:289, sbisNom:"NOM-ETM",  priceListId:1001},
+    {id:"etL",   nm:"Эспрессо-тоник L",     ds:"", pr:319, sbisNom:"NOM-ETL",  priceListId:1001},
+    {id:"bumbM", nm:"Бамбл апельсиновый M", ds:"", pr:269, sbisNom:"NOM-BUMBM",priceListId:1001},
+    {id:"mojkM", nm:"Мохито классика M",    ds:"", pr:199, sbisNom:"NOM-MOJKM",priceListId:1001},
+    {id:"mojkL", nm:"Мохито классика L",    ds:"", pr:229, sbisNom:"NOM-MOJKL",priceListId:1001},
+    {id:"mojsM", nm:"Мохито клубника M",    ds:"", pr:219, sbisNom:"NOM-MOJSM",priceListId:1001},
+    {id:"cherM", nm:"Черри кола M",         ds:"", pr:189, sbisNom:"NOM-CHERM",priceListId:1001},
+    {id:"cherL", nm:"Черри кола L",         ds:"", pr:219, sbisNom:"NOM-CHERL",priceListId:1001},
+  ]},
+  { cat:"Милкшейки", items:[
+    {id:"mshM",  nm:"Милкшейк M", ds:"", pr:249, sbisNom:"NOM-MSHM", priceListId:1001},
+    {id:"mshL",  nm:"Милкшейк L", ds:"", pr:299, sbisNom:"NOM-MSHL", priceListId:1001},
+  ]},
+  { cat:"Какао и чай", items:[
+    {id:"cocoaS",nm:"Какао S",      ds:"⚠ цена с фото не читается", pr:0,   sbisNom:"NOM-COCS",priceListId:1001},
+    {id:"cocoaM",nm:"Какао M",      ds:"⚠ цена с фото не читается", pr:0,   sbisNom:"NOM-COCM",priceListId:1001},
+    {id:"cocoaL",nm:"Какао L",      ds:"⚠ цена с фото не читается", pr:0,   sbisNom:"NOM-COCL",priceListId:1001},
+    {id:"teaG",  nm:"Чай зелёный",  ds:"кружка", pr:129, sbisNom:"NOM-TEAG",priceListId:1001},
+    {id:"teaB",  nm:"Чай чёрный",   ds:"кружка", pr:119, sbisNom:"NOM-TEAB",priceListId:1001},
+  ]},
+  { cat:"Десерты", items:[
+    {id:"iceCr", nm:"Мороженое с топпингом", ds:"", pr:199, sbisNom:"NOM-ICE", priceListId:1001},
+    {id:"cheese",nm:"Чизкейк", ds:"карамельный с орешками · кленовый пекан · лайм · фисташка · банан", pr:249, sbisNom:"NOM-CHZ",priceListId:1001},
+    {id:"cookS", nm:"Печенье SPORTY",   ds:"⚠ проверь цену", pr:200, sbisNom:"NOM-CKS", priceListId:1001},
+    {id:"gum",   nm:"Жвачка Love is",   ds:"",               pr:15,  sbisNom:"NOM-GUM", priceListId:1001},
   ]},
 ];
 
@@ -285,7 +295,7 @@ function renderMenu(){
         <div class="item">
           <div class="info">
             <div class="nm">${i.nm}</div>
-            ${i.ds?`<div class="ds">${i.ds}</div>`:""}
+            ${i.ds ? `<div class="ds">${i.ds}</div>` : ""}
           </div>
           <div class="pr">${i.pr} ₽</div>
           ${ITEM[i.id].qty>0
@@ -298,12 +308,11 @@ function renderMenu(){
         </div>`).join("")}
     </div>`).join("");
 }
-function chg(id,d){ ITEM[id].qty=Math.max(0,ITEM[id].qty+d); renderMenu(); updateCart(); }
 
+function chg(id,d){ ITEM[id].qty=Math.max(0,ITEM[id].qty+d); renderMenu(); updateCart(); }
 function cartItems(){ return Object.values(ITEM).filter(i=>i.qty>0); }
 function cartSum(){ return cartItems().reduce((s,i)=>s+i.pr*i.qty,0); }
 function cartCnt(){ return cartItems().reduce((s,i)=>s+i.qty,0); }
-
 function updateCart(){
   const cnt=cartCnt(), sum=cartSum();
   document.getElementById("cart-cnt").textContent=cnt;
@@ -316,7 +325,6 @@ function updateCart(){
 function show(id){ document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active")); document.getElementById(id).classList.add("active"); window.scrollTo(0,0); }
 function goMenu(){ show("screen-menu"); }
 function goCheckout(){ renderZones(); renderSummary(); show("screen-checkout"); }
-
 function renderZones(){
   document.getElementById("zones").innerHTML = ZONES.map(z=>`
     <button class="zone ${zone===z.id?'sel':''}" onclick="selZone('${z.id}')">
@@ -325,7 +333,6 @@ function renderZones(){
 }
 function selZone(id){ zone=id; renderZones(); }
 function selPay(el){ pay=el.dataset.pay; document.querySelectorAll('.pay').forEach(p=>p.classList.remove('sel')); el.classList.add('sel'); buildDev(); }
-
 function renderSummary(){
   const rows = cartItems().map(i=>`<div class="srow"><span>${i.nm} × ${i.qty}</span><span>${i.pr*i.qty} ₽</span></div>`).join("");
   document.getElementById("summary").innerHTML = rows + `<div class="srow tot"><span>Итого</span><span>${cartSum()} ₽</span></div>`;
@@ -338,7 +345,6 @@ function sendOrder(){
   const phone=document.getElementById("phone").value.trim();
   if(!zone){ alert("Выбери зону на пляже"); return; }
   if(!name||!phone){ alert("Заполни имя и телефон — без них курьер не найдёт"); return; }
-
   /* В проде: fetch(БЭКЕНД, {method:'POST', body: JSON.stringify(buildPayload())})
      Бэкенд → СБИС api.sbis.ru/retail/order/create + Telegram курьеру.
      Здесь — демо: показываем подтверждение. */
@@ -378,7 +384,7 @@ function buildDev(){
     `<span class="lbl">POST https://api.sbis.ru/retail/order/create</span>`+
     `<span class="lbl">header: X-SBISAccessToken: &lt;токен сервисной авторизации&gt;</span>`+
     JSON.stringify(buildPayload(),null,2)+
-    `\n\n`+`<span class="lbl">Telegram курьеру (Bot API sendMessage):</span>`+
+    `\n\n<span class="lbl">Telegram курьеру (Bot API sendMessage):</span>`+
     telegramText();
 }
 
