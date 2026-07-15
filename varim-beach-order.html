@@ -279,8 +279,8 @@ const ZONES = [
   {id:"other",  ico:"📍", nm:"Другое (укажу в ориентире)"},
 ];
 
-/* СБИС: id точки продаж Varim (получить запросом «Получить точку продаж») */
-const SBIS_POINT_ID = 0; // <-- подставить
+/* Бэкенд на Railway: создаёт заказ в Saby Presto и отдаёт статус */
+const API_BASE = "https://varim-beach-order-production.up.railway.app/api";
 
 const ITEM = {};
 MENU.forEach(c=>c.items.forEach(i=>ITEM[i.id]={...i,qty:0}));
@@ -340,52 +340,51 @@ function renderSummary(){
 }
 
 /* ---------- ОТПРАВКА ---------- */
-function sendOrder(){
-  const name=document.getElementById("name").value.trim();
-  const phone=document.getElementById("phone").value.trim();
-  if(!zone){ alert("Выбери зону на пляже"); return; }
-  if(!name||!phone){ alert("Заполни имя и телефон — без них курьер не найдёт"); return; }
-  /* В проде: fetch(БЭКЕНД, {method:'POST', body: JSON.stringify(buildPayload())})
-     Бэкенд → СБИС api.sbis.ru/retail/order/create + Telegram курьеру.
-     Здесь — демо: показываем подтверждение. */
-  show("screen-done");
-  const b=document.querySelector(".boat2"); b.style.animation="none"; void b.offsetWidth; b.style.animation="cross 2.6s ease-in-out forwards";
+async function sendOrder(){
+const name=document.getElementById("name").value.trim();
+const phone=document.getElementById("phone").value.trim();
+if(!zone){ alert("Выбери зону на пляже"); return; }
+if(!name||!phone){ alert("Заполни имя и телефон — без них курьер не найдёт"); return; }
+
+const btn=document.getElementById("sendbar");
+const originalHTML=btn.innerHTML;
+btn.disabled=true;
+btn.innerHTML="<span>Отправляем…</span>";
+
+try{
+const resp=await fetch(API_BASE+"/order/create",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify(buildApiPayload())
+});
+const data=await resp.json().catch(function(){ return {}; });
+if(!resp.ok){ throw new Error((data&&(data.message||data.error))||"Не удалось создать заказ"); }
+show("screen-done");
+const b=document.querySelector(".boat2"); b.style.animation="none"; void b.offsetWidth; b.style.animation="cross 2.6s ease-in-out forwards";
+}catch(err){
+alert("Не получилось отправить заказ: "+err.message+". Попробуй ещё раз.");
+btn.disabled=false;
+btn.innerHTML=originalHTML;
+}
 }
 
-function buildPayload(){
-  const z = ZONES.find(x=>x.id===zone);
-  const landmark=document.getElementById("landmark").value.trim();
-  const comment=document.getElementById("comment").value.trim();
-  const fullComment=[`Пляж: ${z?z.nm:"—"}`, landmark&&`Ориентир: ${landmark}`, comment].filter(Boolean).join(". ");
-  const now=new Date();
-  const dt=now.toISOString().slice(0,10)+" "+now.toTimeString().slice(0,8);
-  return {
-    product:"delivery",
-    pointId:SBIS_POINT_ID,
-    comment:fullComment,
-    customer:{ name:document.getElementById("name").value.trim()||"Гость", phone:document.getElementById("phone").value.trim()||"—" },
-    datetime:dt,
-    nomenclatures: cartItems().map(i=>({ nomNumber:i.sbisNom, priceListId:i.priceListId, count:i.qty, cost:i.pr, name:i.nm })),
-    delivery:{ isPickup:false, paymentType:pay, persons:1 }
-  };
-}
-
-function telegramText(){
-  const p=buildPayload();
-  const lines=p.nomenclatures.map(n=>`• ${n.name} ×${n.count} — ${n.cost*n.count}₽`).join("\n");
-  const sum=p.nomenclatures.reduce((s,n)=>s+n.cost*n.count,0);
-  return `🚤 НОВЫЙ ЗАКАЗ НА ПЛЯЖ\n\n${lines}\n\nИтого: ${sum}₽ · оплата: ${pay==="card"?"картой":"наличными"} курьеру\n${p.comment}\n☎ ${p.customer.name}, ${p.customer.phone}`;
+function buildApiPayload(){
+return {
+zoneId: zone,
+landmark: document.getElementById("landmark").value.trim(),
+customer:{ name:document.getElementById("name").value.trim()||"Гость", phone:document.getElementById("phone").value.trim()||"—" },
+payment: pay,
+comment: document.getElementById("comment").value.trim(),
+items: cartItems().map(function(i){ return { id:i.id, qty:i.qty }; })
+};
 }
 
 function buildDev(){
-  const out=document.getElementById("devout");
-  if(cartCnt()===0){ out.textContent="Добавь что-нибудь в корзину и оформи заказ — здесь появится payload."; return; }
-  out.innerHTML =
-    `<span class="lbl">POST https://api.sbis.ru/retail/order/create</span>`+
-    `<span class="lbl">header: X-SBISAccessToken: &lt;токен сервисной авторизации&gt;</span>`+
-    JSON.stringify(buildPayload(),null,2)+
-    `\n\n<span class="lbl">Telegram курьеру (Bot API sendMessage):</span>`+
-    telegramText();
+const out=document.getElementById("devout");
+if(cartCnt()===0){ out.textContent="Добавь что-нибудь в корзину и оформи заказ — здесь появится payload."; return; }
+out.innerHTML =
+"<span class='lbl'>POST "+API_BASE+"/order/create</span>"+
+JSON.stringify(buildApiPayload(),null,2);
 }
 
 function reset(){
