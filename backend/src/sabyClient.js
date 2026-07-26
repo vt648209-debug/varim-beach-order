@@ -49,6 +49,15 @@ async function withRetry(fn, opts) {
       lastErr = err;
       const status = err.response && err.response.status;
       const retryable = !status || status >= 500 || status === 429;
+      logger.error(
+        {
+          attempt: attempt,
+          status: status,
+          message: err.message,
+          data: err.response ? err.response.data : null,
+        },
+        "Saby API error"
+      );
       if (!retryable || attempt === retries) break;
       if (status === 401 && config.saby.authMode === "login") {
         cachedToken = null;
