@@ -374,14 +374,24 @@ btn.innerHTML=originalHTML;
 }
 
 function buildApiPayload(){
-return {
-zoneId: zone,
-landmark: document.getElementById("landmark").value.trim(),
-customer:{ name:document.getElementById("name").value.trim()||"Гость", phone:document.getElementById("phone").value.trim()||"—" },
-payment: pay,
-comment: document.getElementById("comment").value.trim(),
-items: cartItems().map(function(i){ return { id:i.id, qty:i.qty }; })
-};
+  return {
+    zoneId: zone,
+    landmark: document.getElementById("landmark").value.trim(),
+    customer: {
+      name: document.getElementById("name").value.trim() || "Гость",
+      phone: document.getElementById("phone").value.trim() || "—"
+    },
+    payment: pay,
+    comment: document.getElementById("comment").value.trim(),
+    items: cartItems().map(function(i){
+      return {
+        id: i.id,
+        qty: i.qty,
+        sbisNom: i.sbisNom,
+        priceListId: i.priceListId
+      };
+    })
+  };
 }
 
 function buildDev(){
