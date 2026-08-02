@@ -91,7 +91,7 @@
     width:100%;border:1px solid var(--line);border-radius:13px;padding:13px 14px;
     font-family:'Manrope';font-size:15px;background:var(--foam);color:var(--ink);
   }
-  .field input:focus,.field textarea:focus{outline:none;border-color:var(--water)}
+  .field input:focus,.field textarea:focus{outline:none;border-color:var(--water)}.field input.err,.field textarea.err{border-color:#e0483f}.errmsg{color:#e0483f;font-size:12px;margin-top:4px;font-weight:600}.formbanner{background:#fdeceb;color:#b23327;border:1px solid #f3c6c2;border-radius:12px;padding:12px 14px;font-size:13px;font-weight:600;margin-bottom:14px}
   .zones{display:grid;grid-template-columns:1fr 1fr;gap:8px}
   .zone{
     border:1.5px solid var(--line);border-radius:13px;padding:12px;background:var(--foam);
@@ -289,7 +289,7 @@ const API_BASE = "https://varim-beach-order-production.up.railway.app/api";
 
 const ITEM = {};
 MENU.forEach(c=>c.items.forEach(i=>ITEM[i.id]={...i,qty:0}));
-let zone = null, pay = "card";
+let zone = null, pay = "card"; function normalizePhone(v){var d=(v||"").replace(/[^\d+]/g,"");if(d.indexOf("+")===0){d=d.slice(1);}else if(d[0]==="8"&&d.length===11){d=d.slice(1);}else if(d[0]==="7"&&d.length===11){d=d.slice(1);}if(d.length===10){return "+7"+d;}if(d.length===11&&d[0]==="7"){return "+"+d;}return null;} function isValidPhone(v){var n=normalizePhone(v);return !!n && /^\+7\d{10}$/.test(n);} function clearFieldErrors(){document.querySelectorAll(".field .err").forEach(function(el){el.classList.remove("err");});document.querySelectorAll(".errmsg").forEach(function(el){el.remove();});var b=document.getElementById("formbanner");if(b){b.remove();}} function showFieldError(el,msg){el.classList.add("err");var hint=document.createElement("div");hint.className="errmsg";hint.textContent=msg;el.parentElement.appendChild(hint);el.focus();} function showFormError(msg){var pad=document.querySelector(".checkout-pad");var b=document.createElement("div");b.id="formbanner";b.className="formbanner";b.textContent=msg;pad.insertBefore(b,pad.firstChild);}
 
 /* ---------- РЕНДЕР МЕНЮ ---------- */
 function renderMenu(){
@@ -345,56 +345,7 @@ function renderSummary(){
 }
 
 /* ---------- ОТПРАВКА ---------- */
-async function sendOrder(){
-const name=document.getElementById("name").value.trim();
-const phone=document.getElementById("phone").value.trim();
-if(!zone){ alert("Выбери зону на пляже"); return; }
-if(!name||!phone){ alert("Заполни имя и телефон — без них курьер не найдёт"); return; }
-
-const btn=document.getElementById("sendbar");
-const originalHTML=btn.innerHTML;
-btn.disabled=true;
-btn.innerHTML="<span>Отправляем…</span>";
-
-try{
-const resp=await fetch(API_BASE+"/order/create",{
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify(buildApiPayload())
-});
-const data=await resp.json().catch(function(){ return {}; });
-if(!resp.ok){ throw new Error((data&&(data.message||data.error))||"Не удалось создать заказ"); }
-show("screen-done");
-const b=document.querySelector(".boat2"); b.style.animation="none"; void b.offsetWidth; b.style.animation="cross 2.6s ease-in-out forwards";
-}catch(err){
-alert("Не получилось отправить заказ: "+err.message+". Попробуй ещё раз.");
-btn.disabled=false;
-btn.innerHTML=originalHTML;
-}
-}
-
-function buildApiPayload(){
-  return {
-    zoneId: zone,
-    landmark: document.getElementById("landmark").value.trim(),
-    customer: {
-      name: document.getElementById("name").value.trim() || "Гость",
-      phone: document.getElementById("phone").value.trim() || "—"
-    },
-    payment: pay,
-    comment: document.getElementById("comment").value.trim(),
-    items: cartItems().map(function(i){
-      return {
-        id: i.id,
-        qty: i.qty,
-        sbisNom: i.sbisNom,
-        priceListId: i.priceListId
-      };
-    })
-  };
-}
-
-function buildDev(){
+async function sendOrder(){clearFieldErrors();const nameEl=document.getElementById("name");const phoneEl=document.getElementById("phone");const name=nameEl.value.trim();const phoneRaw=phoneEl.value.trim();if(!zone){showFormError("Выбери зону на пляже");return;}if(!name){showFieldError(nameEl,"Укажи имя");return;}if(!phoneRaw){showFieldError(phoneEl,"Укажи телефон");return;}if(!isValidPhone(phoneRaw)){showFieldError(phoneEl,"Введи корректный номер телефона, например +7 900 123-45-67");return;}const phoneNormalized=normalizePhone(phoneRaw);const btn=document.getElementById("sendbar");const originalHTML=btn.innerHTML;btn.disabled=true;btn.innerHTML="<span>Отправляем…</span>";try{const resp=await fetch(API_BASE+"/order/create",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(buildApiPayload(phoneNormalized))});const data=await resp.json().catch(function(){return {};});if(!resp.ok){throw new Error((data&&(data.message||data.error))||"Не удалось создать заказ");}show("screen-done");const b=document.querySelector(".boat2");b.style.animation="none";void b.offsetWidth;b.style.animation="cross 2.6s ease-in-out forwards";}catch(err){showFormError("Не получилось отправить заказ: "+err.message+". Попробуй ещё раз.");btn.disabled=false;btn.innerHTML=originalHTML;}} function buildApiPayload(phoneOverride){return {zoneId: zone,landmark: document.getElementById("landmark").value.trim(),customer: {name: document.getElementById("name").value.trim() || "Гость",phone: phoneOverride || document.getElementById("phone").value.trim() || "—"},payment: pay,comment: document.getElementById("comment").value.trim(),items: cartItems().map(function(i){return {id: i.id,qty: i.qty,sbisNom: i.sbisNom,priceListId: i.priceListId};})};} function buildDev(){
 const out=document.getElementById("devout");
 if(cartCnt()===0){ out.textContent="Добавь что-нибудь в корзину и оформи заказ — здесь появится payload."; return; }
 out.innerHTML =
