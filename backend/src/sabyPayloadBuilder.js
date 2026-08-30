@@ -1,7 +1,7 @@
 import { config } from "./config.js";
 import { MENU_MAP, ZONES } from "./mapping.js";
 
-export function buildSabyPayload(order) {
+function formatSabyDatetime(date, timeZone) { const parts = new Intl.DateTimeFormat("en-CA", { timeZone: timeZone, year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false }).formatToParts(date); const get = function (type) { return parts.find(function (p) { return p.type === type; }).value; }; return get("year") + "-" + get("month") + "-" + get("day") + " " + get("hour") + ":" + get("minute") + ":" + get("second"); } export function buildSabyPayload(order) {
   const nomenclatures = order.items.map(function (it) {
     const item = MENU_MAP[it.id];
     if (!item) throw new Error("Неизвестный товар: " + it.id);
@@ -25,7 +25,7 @@ const zoneName = ZONES[order.zoneId] || order.zoneId;
   const fullComment = parts.filter(Boolean).join(". ");
 
 const now = new Date();
-  const datetime = now.toISOString().slice(0, 10) + " " + now.toTimeString().slice(0, 8);
+  const datetime = formatSabyDatetime(now, "Europe/Moscow");
 
 let delivery;
   if (config.saby.deliveryMode === "zone") {
