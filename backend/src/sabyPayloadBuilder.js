@@ -25,7 +25,7 @@ const zoneName = ZONES[order.zoneId] || order.zoneId;
   const fullComment = parts.filter(Boolean).join(". ");
 
 const now = new Date();
-  const datetime = formatSabyDatetime(now, "Europe/Moscow");
+  const datetime = formatSabyDatetime(new Date(now.getTime() + 60000 * Number(process.env.ORDER_LEAD_MINUTES || 20)), "Europe/Moscow");
 
 let delivery;
   if (config.saby.deliveryMode === "zone") {
