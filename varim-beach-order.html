@@ -70,6 +70,10 @@
     padding:9px 16px;border-radius:14px;cursor:pointer;font-family:'Manrope'
   }
   .add:active{transform:scale(.96)}
+  .item select.opt{margin-top:8px;width:100%;max-width:280px;padding:7px 10px;border:1px solid var(--line);border-radius:10px;background:var(--sand);font:inherit;font-size:13px;color:var(--ink)}
+  .item .sub{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px;font-size:13px}
+  .item .sub .stepper button{width:28px;height:28px;font-size:17px}
+  .item.grp{align-items:flex-start}
   /* ---------- STICKY CART BAR ---------- */
   .cartbar{
     position:fixed;left:50%;transform:translateX(-50%);bottom:14px;width:calc(100% - 28px);max-width:452px;
@@ -219,62 +223,181 @@
 </div>
 
 <script>
-/* ====== МЕНЮ «Белая Холуница» — синхронизировано с каталогом Presto (Saby), 07.2026 ======
-   sbisNom/priceListId — технические id-заглушки, подставь реальные значения из выгрузки Presto при интеграции. */
+/* ====== МЕНЮ «Белая Холуница» — синхронизировано с быстрым меню Presto (Saby), прайс 51, 05.10.2026 ======
+   Цены и номенклатура для заказа берутся на бэкенде (backend/src/mapping.js) по id позиции.
+   Позиции с opts — одна кнопка с выбором вкуса/варианта; каждый вариант — отдельная номенклатура Saby. */
 
 const MENU = [
   { cat:"Эспрессо-бар", items:[
-    {id:"esp2", nm:"Эспрессо M", ds:"", pr:119, sbisNom:"NOM-ESP2", priceListId:1001},
-    {id:"amerS", nm:"Американо S", ds:"", pr:129, sbisNom:"NOM-AMERS",priceListId:1001},
-    {id:"amerM", nm:"Американо M", ds:"", pr:149, sbisNom:"NOM-AMERM",priceListId:1001},
-    {id:"amerL", nm:"Американо L", ds:"", pr:169, sbisNom:"NOM-AMERL",priceListId:1001},
+    {"id":"esp2","nm":"Эспрессо двойной","ds":"","pr":120},
+    {"id":"amerS","nm":"Американо S","ds":"","pr":130},
+    {"id":"amerM","nm":"Американо M","ds":"","pr":150},
+    {"id":"amerL","nm":"Американо L","ds":"","pr":170}
   ]},
   { cat:"Классические кофейные", items:[
-    {id:"cappS", nm:"Капучино S", ds:"", pr:169, sbisNom:"NOM-CAPPS", priceListId:1001},
-    {id:"cappM", nm:"Капучино M", ds:"", pr:219, sbisNom:"NOM-CAPPM", priceListId:1001},
-    {id:"cappL", nm:"Капучино L", ds:"", pr:249, sbisNom:"NOM-CAPPL", priceListId:1001},
-    {id:"latteM",nm:"Латте M", ds:"", pr:219, sbisNom:"NOM-LATTEM",priceListId:1001},
-    {id:"latteL",nm:"Латте L", ds:"", pr:249, sbisNom:"NOM-LATTEL",priceListId:1001},
-    {id:"flatW", nm:"Флэт уайт", ds:"", pr:219, sbisNom:"NOM-FLATS", priceListId:1001},
+    {"id":"cappS","nm":"Капучино S","ds":"","pr":170},
+    {"id":"cappM","nm":"Капучино M","ds":"","pr":220},
+    {"id":"cappL","nm":"Капучино L","ds":"","pr":250},
+    {"id":"latteM","nm":"Латте M","ds":"","pr":220},
+    {"id":"latteL","nm":"Латте L","ds":"","pr":250},
+    {"id":"flatW","nm":"Флэт уайт","ds":"","pr":220},
+    {"id":"rafM","nm":"Раф M","ds":"","pr":300},
+    {"id":"rafL","nm":"Раф L","ds":"","pr":350},
+    {"id":"drip","nm":"Дрип-кофе","ds":"","pr":150},
+    {grp:"g_inst", nm:"Кофе растворимый", ds:"выбери сорт", opts:[
+      {"id":"instMount","nm":"Маунт","pr":130},
+      {"id":"instDecaf","nm":"Декаф","pr":130},
+      {"id":"instFunky","nm":"Фанки","pr":130},
+      {"id":"instSidamo","nm":"Сидамо","pr":130},
+      {"id":"instBerry","nm":"Бэрри","pr":130}]}
   ]},
-  { cat:"Кофе 18+", items:[
-    {id:"c18cappM", nm:"Капучино 18+ M", ds:"", pr:229, sbisNom:"NOM-C18CAPPM", priceListId:1001},
-    {id:"c18cappL", nm:"Капучино 18+ L", ds:"", pr:309, sbisNom:"NOM-C18CAPPL", priceListId:1001},
-    {id:"c18latteM", nm:"Латте 18+ M", ds:"", pr:229, sbisNom:"NOM-C18LATTEM", priceListId:1001},
-    {id:"c18latteL", nm:"Латте 18+ L", ds:"", pr:309, sbisNom:"NOM-C18LATTEL", priceListId:1001},
-    {id:"c18rafM", nm:"Раф 18+ M", ds:"", pr:329, sbisNom:"NOM-C18RAFM", priceListId:1001},
-    {id:"c18rafL", nm:"Раф 18+ L", ds:"", pr:359, sbisNom:"NOM-C18RAFL", priceListId:1001},
-    {id:"c18amerM", nm:"Американо 18+ M", ds:"", pr:229, sbisNom:"NOM-C18AMERM", priceListId:1001},
-    {id:"c18amerL", nm:"Американо 18+ L", ds:"", pr:309, sbisNom:"NOM-C18AMERL", priceListId:1001},
+  { cat:"Сиропы и добавки", items:[
+    {grp:"g_syrup", nm:"Сироп", ds:"добавка в напиток · выбери вкус", opts:[
+      {"id":"syrBanana","nm":"банан","pr":30},
+      {"id":"syrVanilla","nm":"ваниль","pr":30},
+      {"id":"syrCaramel","nm":"карамель","pr":30},
+      {"id":"syrMaple","nm":"кленовый","pr":30},
+      {"id":"syrCoconut","nm":"кокос","pr":30},
+      {"id":"syrRasp","nm":"малина","pr":30},
+      {"id":"syrAlmond","nm":"миндаль","pr":30},
+      {"id":"syrMint","nm":"мята","pr":30},
+      {"id":"syrCookie","nm":"шоколадное печенье","pr":30},
+      {"id":"syrLavender","nm":"лаванда","pr":30},
+      {"id":"syrHazel","nm":"лесной орех","pr":30},
+      {"id":"syrSaltCar","nm":"солёная карамель","pr":30},
+      {"id":"syrPist","nm":"фисташка","pr":30},
+      {"id":"syrMacad","nm":"макадамия","pr":30},
+      {"id":"syrStraw","nm":"клубника","pr":30},
+      {"id":"syrCherry","nm":"вишня","pr":30},
+      {"id":"syrPeach","nm":"персик","pr":30},
+      {"id":"syrIrish","nm":"ирландский крем","pr":30},
+      {"id":"syrSpice","nm":"восточные пряности","pr":30}]},
+    {grp:"g_milk", nm:"Альтернативное молоко", ds:"замена молока в напитке · выбери молоко и размер напитка", opts:[
+      {"id":"mOatS","nm":"овсяное · S","pr":45},
+      {"id":"mOatM","nm":"овсяное · M","pr":70},
+      {"id":"mOatL","nm":"овсяное · L","pr":85},
+      {"id":"mCocS","nm":"кокосовое · S","pr":40},
+      {"id":"mCocM","nm":"кокосовое · M","pr":60},
+      {"id":"mCocL","nm":"кокосовое · L","pr":70},
+      {"id":"mAlmS","nm":"миндальное · S","pr":40},
+      {"id":"mAlmM","nm":"миндальное · M","pr":60},
+      {"id":"mAlmL","nm":"миндальное · L","pr":70},
+      {"id":"mHazS","nm":"фундучное · S","pr":40},
+      {"id":"mHazM","nm":"фундучное · M","pr":60},
+      {"id":"mHazL","nm":"фундучное · L","pr":70},
+      {"id":"mBanS","nm":"бананово-кокосовое · S","pr":40},
+      {"id":"mBanM","nm":"бананово-кокосовое · M","pr":60},
+      {"id":"mBanL","nm":"бананово-кокосовое · L","pr":70},
+      {"id":"mLfS","nm":"безлактозное · S","pr":40},
+      {"id":"mLfM","nm":"безлактозное · M","pr":60},
+      {"id":"mLfL","nm":"безлактозное · L","pr":70}]},
+    {grp:"g_topping", nm:"Топпинг", ds:"выбери вкус", opts:[
+      {"id":"topChoc","nm":"шоколадный","pr":30},
+      {"id":"topCaramel","nm":"карамельный","pr":30},
+      {"id":"topSaltCar","nm":"солёная карамель","pr":30},
+      {"id":"topBanana","nm":"банановый","pr":30},
+      {"id":"topStraw","nm":"клубничный","pr":30}]}
   ]},
-  { cat:"Летние напитки и лимонады", items:[
-    {id:"etM", nm:"Эспрессо-тоник M", ds:"", pr:289, sbisNom:"NOM-ETM", priceListId:1001},
-    {id:"etL", nm:"Эспрессо-тоник L", ds:"", pr:319, sbisNom:"NOM-ETL", priceListId:1001},
-    {id:"bumbOM", nm:"Бамбл апельсин M", ds:"", pr:269, sbisNom:"NOM-BUMBOM",priceListId:1001},
-    {id:"bumbAM", nm:"Бамбл ананасовый M", ds:"", pr:269, sbisNom:"NOM-BUMBAM",priceListId:1001},
-    {id:"mojkM", nm:"Мохито классический M", ds:"", pr:199, sbisNom:"NOM-MOJKM",priceListId:1001},
-    {id:"mojkL", nm:"Мохито классический L", ds:"", pr:229, sbisNom:"NOM-MOJKL",priceListId:1001},
-    {id:"mojsM", nm:"Мохито клубничный M", ds:"", pr:219, sbisNom:"NOM-MOJSM",priceListId:1001},
-    {id:"mojsL", nm:"Мохито клубничный L", ds:"", pr:229, sbisNom:"NOM-MOJSL",priceListId:1001},
-    {id:"cherL", nm:"Черри-кола кофе L", ds:"", pr:219, sbisNom:"NOM-CHERL",priceListId:1001},
+  { cat:"Летние напитки", items:[
+    {"id":"etM","nm":"Эспрессо-тоник M","ds":"","pr":290},
+    {"id":"etL","nm":"Эспрессо-тоник L","ds":"","pr":320},
+    {"id":"bumbOM","nm":"Бамбл апельсин M","ds":"","pr":270},
+    {"id":"bumbAM","nm":"Бамбл ананасовый M","ds":"","pr":269},
+    {"id":"mojkM","nm":"Мохито классический M","ds":"","pr":200},
+    {"id":"mojkL","nm":"Мохито классический L","ds":"","pr":230},
+    {"id":"mojsM","nm":"Мохито клубничный M","ds":"","pr":220},
+    {"id":"mojsL","nm":"Мохито клубничный L","ds":"","pr":230},
+    {"id":"cherM","nm":"Черри-кола кофе M","ds":"","pr":190},
+    {"id":"cherL","nm":"Черри-кола кофе L","ds":"","pr":220}
   ]},
-  { cat:"Милкшейки", items:[
-    {id:"mshM", nm:"Милкшейк ванильный M", ds:"", pr:249, sbisNom:"NOM-MSHM", priceListId:1001},
-    {id:"mshL", nm:"Милкшейк ванильный L", ds:"", pr:299, sbisNom:"NOM-MSHL", priceListId:1001},
+  { cat:"Милкшейки и мороженое", items:[
+    {"id":"mshM","nm":"Милкшейк ванильный M","ds":"","pr":250},
+    {"id":"mshL","nm":"Милкшейк ванильный L","ds":"","pr":300},
+    {"id":"mshChM","nm":"Милкшейк шоколадный M","ds":"","pr":250},
+    {"id":"mshChL","nm":"Милкшейк шоколадный L","ds":"","pr":300},
+    {"id":"iceCr","nm":"Мороженое с топпингом","ds":"","pr":200},
+    {"id":"iceCrCh","nm":"Мороженое шоколадное с топпингом","ds":"","pr":200},
+    {"id":"iceBall","nm":"Шарик мороженого 50 г","ds":"","pr":100}
   ]},
   { cat:"Какао и чай", items:[
-    {id:"cocoaS",nm:"Какао S", ds:"", pr:199, sbisNom:"NOM-COCS",priceListId:1001},
-    {id:"cocoaM",nm:"Какао M", ds:"", pr:229, sbisNom:"NOM-COCM",priceListId:1001},
-    {id:"cocoaL",nm:"Какао L", ds:"", pr:259, sbisNom:"NOM-COCL",priceListId:1001},
-    {id:"teaG", nm:"Чай зелёный", ds:"кружка", pr:129, sbisNom:"NOM-TEAG",priceListId:1001},
-    {id:"teaB", nm:"Чай чёрный", ds:"кружка · есть травяной/ягодный на выбор", pr:119, sbisNom:"NOM-TEAB",priceListId:1001},
+    {"id":"cocoaS","nm":"Какао S","ds":"","pr":200},
+    {"id":"cocoaM","nm":"Какао M","ds":"","pr":230},
+    {"id":"cocoaL","nm":"Какао L","ds":"","pr":260},
+    {"id":"teaG","nm":"Чай зелёный","ds":"чашка","pr":130},
+    {"id":"teaB","nm":"Чай чёрный / травяной / ягодный","ds":"чашка","pr":120}
   ]},
-  { cat:"Десерты", items:[
-    {id:"iceCr", nm:"Мороженое", ds:"с топпингом · шоколадное", pr:199, sbisNom:"NOM-ICE", priceListId:1001},
-    {id:"cheese",nm:"Чизкейк", ds:"банановый с шоколадным печеньем · фисташковый · кленовый пекан · лайм · карамельный с орешками", pr:249, sbisNom:"NOM-CHZ",priceListId:1001},
-    {id:"cookS", nm:"Печенье SPORTY", ds:"солёная карамель · груша в карамели · тирамису · шоколадный брауни · малиновый чизкейк · шоколад-банан · клубника", pr:200, sbisNom:"NOM-CKS", priceListId:1001},
-    {id:"gum", nm:"Жвачка Love is", ds:"кокос-ананас · ассорти · вишня-лимон · яблоко-лимон", pr:15, sbisNom:"NOM-GUM", priceListId:1001},
+  { cat:"Вафли", items:[
+    {"id":"wafChoc","nm":"Вафли шоколадные","ds":"","pr":125},
+    {"id":"wafPlain","nm":"Вафля несладкая","ds":"","pr":125},
+    {"id":"wafCurd","nm":"Вафля творожная","ds":"","pr":145},
+    {"id":"wafHam","nm":"Сэндвич-вафля с ветчиной","ds":"","pr":290},
+    {"id":"wafChick","nm":"Сэндвич-вафля с курицей","ds":"","pr":290}
   ]},
+  { cat:"Десерты и сладкое", items:[
+    {grp:"g_cheese", nm:"Чизкейк", ds:"выбери вкус", opts:[
+      {"id":"cheese","nm":"банановый с шоколадным печеньем","pr":250},
+      {"id":"chPist","nm":"фисташковый","pr":250},
+      {"id":"chCaramel","nm":"карамельный с орешками","pr":250},
+      {"id":"chLime","nm":"лайм","pr":250}]},
+    {grp:"g_sporty", nm:"Печенье SPORTY", ds:"протеиновое · выбери вкус", opts:[
+      {"id":"cookS","nm":"солёная карамель","pr":200},
+      {"id":"ckPear","nm":"груша в карамели","pr":200},
+      {"id":"ckTiram","nm":"тирамису","pr":200},
+      {"id":"ckBrownie","nm":"шоколадный брауни","pr":200},
+      {"id":"ckRasp","nm":"малиновый чизкейк","pr":200},
+      {"id":"ckChocBan","nm":"шоколад-банан","pr":200},
+      {"id":"ckStraw","nm":"клубника","pr":200}]},
+    {grp:"g_bar", nm:"Протеиновый батончик SPORTY", ds:"глазированный · выбери вкус", opts:[
+      {"id":"barCocRasp","nm":"кокос-малина","pr":160},
+      {"id":"barCocChoc","nm":"кокос-шоколад","pr":160},
+      {"id":"barPist","nm":"фисташковая меренга с малиной","pr":160},
+      {"id":"barCherry","nm":"вишнёвый брауни","pr":160},
+      {"id":"barPanna","nm":"панна-котта с карамелью","pr":160},
+      {"id":"barVanCook","nm":"печенье с ванильным кремом","pr":160},
+      {"id":"barCoco","nm":"кокос","pr":160},
+      {"id":"barSaltPean","nm":"солёная карамель с арахисом","pr":160},
+      {"id":"barTriple","nm":"тройной шоколад","pr":160}]},
+    {grp:"g_riobaCandy", nm:"Конфеты мультизлаковые RIOBA 42 г", ds:"выбери шоколад", opts:[
+      {"id":"rcDark","nm":"тёмный шоколад","pr":45},
+      {"id":"rcWhite","nm":"белый шоколад","pr":45}]},
+    {grp:"g_riobaChoc", nm:"Шоколад RIOBA 5 г", ds:"выбери шоколад", opts:[
+      {"id":"rchDark","nm":"тёмный","pr":30},
+      {"id":"rchMilk","nm":"молочный","pr":30}]},
+    {"id":"riobaCook","nm":"Печенье с пряностями RIOBA 5,5 г","ds":"","pr":20},
+    {grp:"g_scandic", nm:"Конфеты SCANDIC без сахара", ds:"выбери вкус", opts:[
+      {"id":"scMint","nm":"арктическая мята","pr":90},
+      {"id":"scStraw","nm":"клубничный микс","pr":90},
+      {"id":"scCurrant","nm":"смородина-базилик","pr":90},
+      {"id":"scCitrus","nm":"цитрусовый микс","pr":90},
+      {"id":"scMango","nm":"манго","pr":90},
+      {"id":"scGrape","nm":"виноградный микс","pr":90},
+      {"id":"scBerry","nm":"лесные ягоды","pr":90},
+      {"id":"scBarb","nm":"барбарис","pr":90},
+      {"id":"scApplSp","nm":"пряное яблоко","pr":90},
+      {"id":"scApple","nm":"яблоко (Смешарики)","pr":90},
+      {"id":"scCola","nm":"кола","pr":90},
+      {"id":"scTrop","nm":"тропический микс","pr":90}]},
+    {grp:"g_gumGrp", nm:"Жвачка Love is", ds:"выбери вкус", opts:[
+      {"id":"gumCoco","nm":"кокос-ананас","pr":15},
+      {"id":"gum","nm":"ассорти","pr":15},
+      {"id":"gumCherry","nm":"вишня-лимон","pr":15},
+      {"id":"gumApple","nm":"яблоко-лимон","pr":15}]}
+  ]},
+  { cat:"Вода, соки, энергетики", items:[
+    {"id":"water","nm":"Вода негазированная 0,5 л","ds":"","pr":80},
+    {"id":"juiceApple","nm":"Сок яблочный 0,2 л","ds":"","pr":110},
+    {grp:"g_rioba", nm:"Сок / морс RIOBA 0,25 л", ds:"выбери вкус", opts:[
+      {"id":"rjSeaBuck","nm":"морс облепиха","pr":150},
+      {"id":"rjBerry","nm":"морс «Ягодный сбор»","pr":150},
+      {"id":"rjCherry","nm":"сок вишня","pr":150},
+      {"id":"rjPeach","nm":"сок персик","pr":150},
+      {"id":"rjMango","nm":"сок манго","pr":150}]},
+    {grp:"g_volt", nm:"Энергетик VOLT ENERGY", ds:"выбери вкус", opts:[
+      {"id":"voltOrig","nm":"классический","pr":125},
+      {"id":"voltGrape","nm":"виноград-гуава","pr":125},
+      {"id":"voltBlue","nm":"голубика-гранат","pr":125},
+      {"id":"voltPomelo","nm":"помело и мята","pr":125}]}
+  ]}
 ];
 
 const ZONES = [
@@ -284,11 +407,37 @@ const ZONES = [
   {id:"other",  ico:"📍", nm:"Другое (укажу в ориентире)"},
 ];
 
-/* Бэкенд на Railway: создаёт заказ в Saby Presto и отдаёт статус */
+/* Бэкенд на VPS (api.варим-кофе.рф): создаёт заказ в Saby Presto и отдаёт статус */
 const API_BASE = "https://api.xn----7sbfonnmsn9b.xn--p1ai/api";
 
 const ITEM = {};
-MENU.forEach(c=>c.items.forEach(i=>ITEM[i.id]={...i,qty:0}));
+const SEL = {};   /* выбранный вариант в позициях с выбором вкуса: grp -> id */
+MENU.forEach(c=>c.items.forEach(i=>{
+  if(i.opts){ SEL[i.grp]=i.opts[0].id; i.opts.forEach(o=>ITEM[o.id]={id:o.id, nm:i.nm+" · "+o.nm, pr:o.pr, qty:0}); }
+  else ITEM[i.id]={...i,qty:0};
+}));
+function stepper(id){ return `<div class="stepper">
+     <button onclick="chg('${id}',-1)">−</button>
+     <span class="qty">${ITEM[id].qty}</span>
+     <button onclick="chg('${id}',1)">+</button>
+   </div>`; }
+function renderGroup(i){
+  const prs=i.opts.map(o=>o.pr), mn=Math.min(...prs), same=prs.every(p=>p===mn);
+  const chosen=i.opts.filter(o=>ITEM[o.id].qty>0);
+  return `
+    <div class="item grp">
+      <div class="info">
+        <div class="nm">${i.nm}</div>
+        ${i.ds ? `<div class="ds">${i.ds}</div>` : ""}
+        <select class="opt" onchange="SEL['${i.grp}']=this.value">
+          ${i.opts.map(o=>`<option value="${o.id}" ${SEL[i.grp]===o.id?"selected":""}>${o.nm}${same?"":" — "+o.pr+" ₽"}</option>`).join("")}
+        </select>
+        ${chosen.map(o=>`<div class="sub"><span>${o.nm} · ${o.pr} ₽</span>${stepper(o.id)}</div>`).join("")}
+      </div>
+      <div class="pr">${same?"":"от "}${mn} ₽</div>
+      <button class="add" onclick="chg(SEL['${i.grp}'],1)">+</button>
+    </div>`;
+}
 let zone = null, pay = "card"; function normalizePhone(v){var d=(v||"").replace(/[^\d+]/g,"");if(d.indexOf("+")===0){d=d.slice(1);}else if(d[0]==="8"&&d.length===11){d=d.slice(1);}else if(d[0]==="7"&&d.length===11){d=d.slice(1);}if(d.length===10){return "+7"+d;}if(d.length===11&&d[0]==="7"){return "+"+d;}return null;} function isValidPhone(v){var n=normalizePhone(v);return !!n && /^\+7\d{10}$/.test(n);} function clearFieldErrors(){document.querySelectorAll(".field .err").forEach(function(el){el.classList.remove("err");});document.querySelectorAll(".errmsg").forEach(function(el){el.remove();});var b=document.getElementById("formbanner");if(b){b.remove();}} function showFieldError(el,msg){el.classList.add("err");var hint=document.createElement("div");hint.className="errmsg";hint.textContent=msg;el.parentElement.appendChild(hint);el.focus();} function showFormError(msg){var pad=document.querySelector(".checkout-pad");var b=document.createElement("div");b.id="formbanner";b.className="formbanner";b.textContent=msg;pad.insertBefore(b,pad.firstChild);}
 
 /* ---------- РЕНДЕР МЕНЮ ---------- */
@@ -296,7 +445,7 @@ function renderMenu(){
   document.getElementById("menu").innerHTML = MENU.map(c=>`
     <div class="cat">
       <h2>${c.cat}</h2>
-      ${c.items.map(i=>`
+      ${c.items.map(i=> i.opts ? renderGroup(i) : `
         <div class="item">
           <div class="info">
             <div class="nm">${i.nm}</div>
@@ -304,11 +453,7 @@ function renderMenu(){
           </div>
           <div class="pr">${i.pr} ₽</div>
           ${ITEM[i.id].qty>0
-            ? `<div class="stepper">
-                 <button onclick="chg('${i.id}',-1)">−</button>
-                 <span class="qty">${ITEM[i.id].qty}</span>
-                 <button onclick="chg('${i.id}',1)">+</button>
-               </div>`
+            ? stepper(i.id)
             : `<button class="add" onclick="chg('${i.id}',1)">+</button>`}
         </div>`).join("")}
     </div>`).join("");
@@ -345,7 +490,7 @@ function renderSummary(){
 }
 
 /* ---------- ОТПРАВКА ---------- */
-async function sendOrder(){clearFieldErrors();const nameEl=document.getElementById("name");const phoneEl=document.getElementById("phone");const name=nameEl.value.trim();const phoneRaw=phoneEl.value.trim();if(!zone){showFormError("Выбери зону на пляже");return;}if(!name){showFieldError(nameEl,"Укажи имя");return;}if(!phoneRaw){showFieldError(phoneEl,"Укажи телефон");return;}if(!isValidPhone(phoneRaw)){showFieldError(phoneEl,"Введи корректный номер телефона, например +7 900 123-45-67");return;}const phoneNormalized=normalizePhone(phoneRaw);const btn=document.getElementById("sendbar");const originalHTML=btn.innerHTML;btn.disabled=true;btn.innerHTML="<span>Отправляем…</span>";try{const resp=await fetch(API_BASE+"/order/create",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(buildApiPayload(phoneNormalized))});const data=await resp.json().catch(function(){return {};});if(!resp.ok){throw new Error((data&&(data.message||data.error))||"Не удалось создать заказ");}show("screen-done");const b=document.querySelector(".boat2");b.style.animation="none";void b.offsetWidth;b.style.animation="cross 2.6s ease-in-out forwards";}catch(err){showFormError("Не получилось отправить заказ: "+err.message+". Попробуй ещё раз.");btn.disabled=false;btn.innerHTML=originalHTML;}} function buildApiPayload(phoneOverride){return {zoneId: zone,landmark: document.getElementById("landmark").value.trim(),customer: {name: document.getElementById("name").value.trim() || "Гость",phone: phoneOverride || document.getElementById("phone").value.trim() || "—"},payment: pay,comment: document.getElementById("comment").value.trim(),items: cartItems().map(function(i){return {id: i.id,qty: i.qty,sbisNom: i.sbisNom,priceListId: i.priceListId};})};} function buildDev(){
+async function sendOrder(){clearFieldErrors();const nameEl=document.getElementById("name");const phoneEl=document.getElementById("phone");const name=nameEl.value.trim();const phoneRaw=phoneEl.value.trim();if(!zone){showFormError("Выбери зону на пляже");return;}if(!name){showFieldError(nameEl,"Укажи имя");return;}if(!phoneRaw){showFieldError(phoneEl,"Укажи телефон");return;}if(!isValidPhone(phoneRaw)){showFieldError(phoneEl,"Введи корректный номер телефона, например +7 900 123-45-67");return;}const phoneNormalized=normalizePhone(phoneRaw);const btn=document.getElementById("sendbar");const originalHTML=btn.innerHTML;btn.disabled=true;btn.innerHTML="<span>Отправляем…</span>";try{const resp=await fetch(API_BASE+"/order/create",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(buildApiPayload(phoneNormalized))});const data=await resp.json().catch(function(){return {};});if(!resp.ok){throw new Error((data&&(data.message||data.error))||"Не удалось создать заказ");}show("screen-done");const b=document.querySelector(".boat2");b.style.animation="none";void b.offsetWidth;b.style.animation="cross 2.6s ease-in-out forwards";}catch(err){showFormError("Не получилось отправить заказ: "+err.message+". Попробуй ещё раз.");btn.disabled=false;btn.innerHTML=originalHTML;}} function buildApiPayload(phoneOverride){return {zoneId: zone,landmark: document.getElementById("landmark").value.trim(),customer: {name: document.getElementById("name").value.trim() || "Гость",phone: phoneOverride || document.getElementById("phone").value.trim() || "—"},payment: pay,comment: document.getElementById("comment").value.trim(),items: cartItems().map(function(i){return {id: i.id,qty: i.qty};})};} function buildDev(){
 const out=document.getElementById("devout");
 if(cartCnt()===0){ out.textContent="Добавь что-нибудь в корзину и оформи заказ — здесь появится payload."; return; }
 out.innerHTML =
