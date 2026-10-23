@@ -145,11 +145,16 @@
     <svg class="wave" viewBox="0 0 480 30" preserveAspectRatio="none"><path d="M0 18 Q60 4 120 18 T240 18 T360 18 T480 18 V30 H0 Z" fill="#faf3e6"/></svg>
   </header>
   <main id="menu"></main>
-  <details class="dev">
+  <details class="dev" style="display:none">
     <summary>⚙️ Что улетает в СБИС и курьеру (для разработки)</summary>
     <pre id="devout">Добавь что-нибудь в корзину и оформи заказ — здесь появится payload.</pre>
   </details>
-  <div class="foot">Прототип Varim · меню синхронизировано с Presto</div>
+  <div class="foot" style="opacity:1;font-size:12px;line-height:1.6;padding:18px 16px 90px">
+    ИП Шулаков Андрей Сергеевич · ИНН 432906586719 · ОГРНИП 325430000026842<br>
+    Белая Холуница, ул. Здравоохранения, 5 · <a href="tel:+79227812203">+7 (922) 781-22-03</a> · <a href="mailto:varimkofe@bk.ru">varimkofe@bk.ru</a><br>
+    <a href="oferta.html">Публичная оферта</a> · <a href="delivery.html">Доставка, оплата и возврат</a> · <a href="privacy.html">Политика ПДн</a><br>
+    Оплата: МИР · СБП
+  </div>
   <button class="cartbar" id="cartbar" disabled onclick="goCheckout()">
     <span>Оформить заказ</span>
     <span><span class="cnt" id="cart-cnt">0</span> · <span id="cart-sum">0</span> ₽</span>
@@ -200,6 +205,10 @@
       </div>
     </div>
     <div class="summary" id="summary"></div>
+    <label style="display:flex;gap:8px;align-items:flex-start;font-size:13px;margin:14px 0 90px;line-height:1.45">
+      <input type="checkbox" id="agree" style="margin-top:2px;flex:none">
+      <span>Я принимаю условия <a href="oferta.html" target="_blank">оферты</a> и даю согласие на обработку персональных данных в соответствии с <a href="privacy.html" target="_blank">политикой</a></span>
+    </label>
   </div>
   <button class="cartbar" id="sendbar" onclick="sendOrder()">
     <span>Отправить заказ 🚤</span>
@@ -490,7 +499,7 @@ function renderSummary(){
 }
 
 /* ---------- ОТПРАВКА ---------- */
-async function sendOrder(){clearFieldErrors();const nameEl=document.getElementById("name");const phoneEl=document.getElementById("phone");const name=nameEl.value.trim();const phoneRaw=phoneEl.value.trim();if(!zone){showFormError("Выбери зону на пляже");return;}if(!name){showFieldError(nameEl,"Укажи имя");return;}if(!phoneRaw){showFieldError(phoneEl,"Укажи телефон");return;}if(!isValidPhone(phoneRaw)){showFieldError(phoneEl,"Введи корректный номер телефона, например +7 900 123-45-67");return;}const phoneNormalized=normalizePhone(phoneRaw);const btn=document.getElementById("sendbar");const originalHTML=btn.innerHTML;btn.disabled=true;btn.innerHTML="<span>Отправляем…</span>";try{const resp=await fetch(API_BASE+"/order/create",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(buildApiPayload(phoneNormalized))});const data=await resp.json().catch(function(){return {};});if(!resp.ok){throw new Error((data&&(data.message||data.error))||"Не удалось создать заказ");}show("screen-done");const b=document.querySelector(".boat2");b.style.animation="none";void b.offsetWidth;b.style.animation="cross 2.6s ease-in-out forwards";}catch(err){showFormError("Не получилось отправить заказ: "+err.message+". Попробуй ещё раз.");btn.disabled=false;btn.innerHTML=originalHTML;}} function buildApiPayload(phoneOverride){return {zoneId: zone,landmark: document.getElementById("landmark").value.trim(),customer: {name: document.getElementById("name").value.trim() || "Гость",phone: phoneOverride || document.getElementById("phone").value.trim() || "—"},payment: pay,comment: document.getElementById("comment").value.trim(),items: cartItems().map(function(i){return {id: i.id,qty: i.qty};})};} function buildDev(){
+async function sendOrder(){clearFieldErrors();const nameEl=document.getElementById("name");const phoneEl=document.getElementById("phone");const name=nameEl.value.trim();const phoneRaw=phoneEl.value.trim();if(!zone){showFormError("Выбери зону на пляже");return;}if(!name){showFieldError(nameEl,"Укажи имя");return;}if(!phoneRaw){showFieldError(phoneEl,"Укажи телефон");return;}if(!isValidPhone(phoneRaw)){showFieldError(phoneEl,"Введи корректный номер телефона, например +7 900 123-45-67");return;}if(!document.getElementById("agree").checked){showFormError("Подтверди согласие с офертой и политикой обработки персональных данных");return;}const phoneNormalized=normalizePhone(phoneRaw);const btn=document.getElementById("sendbar");const originalHTML=btn.innerHTML;btn.disabled=true;btn.innerHTML="<span>Отправляем…</span>";try{const resp=await fetch(API_BASE+"/order/create",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(buildApiPayload(phoneNormalized))});const data=await resp.json().catch(function(){return {};});if(!resp.ok){throw new Error((data&&(data.message||data.error))||"Не удалось создать заказ");}show("screen-done");const b=document.querySelector(".boat2");b.style.animation="none";void b.offsetWidth;b.style.animation="cross 2.6s ease-in-out forwards";}catch(err){showFormError("Не получилось отправить заказ: "+err.message+". Попробуй ещё раз.");btn.disabled=false;btn.innerHTML=originalHTML;}} function buildApiPayload(phoneOverride){return {zoneId: zone,landmark: document.getElementById("landmark").value.trim(),customer: {name: document.getElementById("name").value.trim() || "Гость",phone: phoneOverride || document.getElementById("phone").value.trim() || "—"},payment: pay,comment: document.getElementById("comment").value.trim(),items: cartItems().map(function(i){return {id: i.id,qty: i.qty};})};} function buildDev(){
 const out=document.getElementById("devout");
 if(cartCnt()===0){ out.textContent="Добавь что-нибудь в корзину и оформи заказ — здесь появится payload."; return; }
 out.innerHTML =
