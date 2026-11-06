@@ -6,6 +6,8 @@ import { sabyClient } from "../sabyClient.js";
 import { saveOrder, getOrderByLocalId, updateStatus } from "../orderStore.js";
 import { logger } from "../logger.js";
 import { paykeeperEnabled, createInvoice } from "../paykeeper.js";
+import { txpgEnabled, createTxpgOrder } from "../txpg.js";
+import { config } from "../config.js";
 
 export const orderRouter = Router();
 
@@ -18,7 +20,28 @@ orderRouter.post("/order/create", async (req, res, next) => {
     const order = parsed.data;
     const built = buildSabyPayload(order);
 
-    // Онлайн-оплата картой/СБП через интернет-эквайринг УБРиР (PayKeeper):
+    // Онлайн-оплата картой напрямую через шлюз УБРиР (TXPG):
+    // заказ сохраняем локально, в СБИС отправляем только после подтверждения оплаты.
+    if (order.payment === "card" && txpgEnabled()) {
+      const localId = uuidv4();
+      saveOrder({ id: localId, externalId: null, status: "awaiting_payment", payload: { order: order, total: built.total }, sabyResponse: {} });
+      let tx;
+      try {
+        tx = await createTxpgOrder({
+          amount: built.total,
+          description: "Varim пляжная доставка, заказ " + localId.slice(0, 8),
+          redirectUrl: config.txpg.publicApiBase.replace(/\/+$/, "") + "/payments/txpg/return/" + localId,
+        });
+      } catch (err) {
+        logger.error({ err: err.message, localId: localId }, "TXPG: не удалось создать заказ на оплату");
+        updateStatus(localId, "payment_init_failed", { error: err.message });
+        return res.status(502).json({ error: "payment_unavailable", message: "Не удалось открыть оплату. Попробуйте ещё раз" });
+      }
+      updateStatus(localId, "awaiting_payment", { txpg: { id: tx.txpgId, password: tx.password } });
+      return res.status(201).json({ orderId: localId, status: "awaiting_payment", total: built.total, paymentLink: tx.link });
+    }
+
+    // Онлайн-оплата через партнёра банка PayKeeper (если подключён вместо прямого шлюза):
     // заказ сохраняем локально, в СБИС отправляем только после подтверждения оплаты.
     if (order.payment === "card" && paykeeperEnabled()) {
       const localId = uuidv4();
