@@ -22,6 +22,15 @@ export const config = {
     webhookSecret: process.env.SABY_WEBHOOK_SECRET || "",
   },
 
+  paykeeper: {
+    // адрес сервера PayKeeper из личного кабинета, например xxxx.ubrr-processing.ru
+    server: process.env.PAYKEEPER_SERVER || "",
+    user: process.env.PAYKEEPER_USER || "",
+    password: process.env.PAYKEEPER_PASSWORD || "",
+    // секретное слово для POST-оповещений (задаётся в ЛК PayKeeper)
+    secret: process.env.PAYKEEPER_SECRET || "",
+  },
+
   dbFile: process.env.DB_FILE || "./data/orders.db",
 
   telegram: {

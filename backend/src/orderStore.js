@@ -40,6 +40,10 @@ export function getOrderByExternalId(externalId) {
   return row ? deserialize(row) : null;
 }
 
+export function setExternalId(id, externalId) {
+  db.prepare("UPDATE orders SET external_id = ?, updated_at = datetime('now') WHERE id = ?").run(externalId, id);
+}
+
 export function updateStatus(id, status, extra) {
   db.prepare(
     "UPDATE orders SET status = ?, updated_at = datetime('now'), " +

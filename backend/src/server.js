@@ -5,11 +5,13 @@ import { config } from "./config.js";
 import { logger } from "./logger.js";
 import { orderRouter } from "./routes/order.js";
 import { webhookRouter } from "./routes/webhook.js";
+import { paymentRouter } from "./routes/payment.js";
 
 const app = express();
 
 app.use(pinoHttp({ logger: logger }));
 app.use(express.json({ limit: "200kb" }));
+app.use(express.urlencoded({ extended: false, limit: "200kb" }));
 
 app.use(cors({
   origin: config.allowedOrigin,
@@ -18,6 +20,7 @@ app.use(cors({
 
 app.use("/api", orderRouter);
 app.use("/api", webhookRouter);
+app.use("/api", paymentRouter);
 
 app.get("/health", (req, res) => res.json({ ok: true }));
 
