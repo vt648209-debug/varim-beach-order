@@ -22,6 +22,25 @@ export const config = {
     webhookSecret: process.env.SABY_WEBHOOK_SECRET || "",
   },
 
+  // Прямой интернет-эквайринг УБРиР (TXPG). Параметры выдаёт банк.
+  txpg: {
+    baseUrl: process.env.TXPG_BASE_URL || "",          // адрес API-шлюза банка
+    user: process.env.TXPG_USER || "",                 // если банк дал логин/пароль API
+    password: process.env.TXPG_PASSWORD || "",
+    certFile: process.env.TXPG_CERT_FILE || "",        // клиентский сертификат (PEM)
+    keyFile: process.env.TXPG_KEY_FILE || "",          // ключ к сертификату (PEM)
+    pfxFile: process.env.TXPG_PFX_FILE || "",          // либо сертификат в .p12/.pfx
+    certPassphrase: process.env.TXPG_CERT_PASSPHRASE || "",
+    caFile: process.env.TXPG_CA_FILE || "",            // корневой сертификат (НУЦ Минцифры)
+    typeRid: process.env.TXPG_TYPE_RID || "Purchase",
+    amountInKopecks: process.env.TXPG_AMOUNT_IN_KOPECKS === "1",
+    orderTtlMinutes: Number(process.env.TXPG_ORDER_TTL_MINUTES || 30),
+    // публичный адрес API, на который банк вернёт покупателя после оплаты
+    publicApiBase: process.env.PUBLIC_API_BASE || "https://api.xn----7sbfonnmsn9b.xn--p1ai/api",
+    // страница сайта, куда отправляем покупателя после проверки оплаты
+    siteUrl: process.env.SITE_URL || "https://vt648209-debug.github.io/varim-beach-order/varim-beach-order.html",
+  },
+
   paykeeper: {
     // адрес сервера PayKeeper из личного кабинета, например xxxx.ubrr-processing.ru
     server: process.env.PAYKEEPER_SERVER || "",

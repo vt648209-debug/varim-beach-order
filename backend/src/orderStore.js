@@ -44,6 +44,10 @@ export function setExternalId(id, externalId) {
   db.prepare("UPDATE orders SET external_id = ?, updated_at = datetime('now') WHERE id = ?").run(externalId, id);
 }
 
+export function listOrdersByStatus(status, maxAgeMinutes) {
+  return db.prepare("SELECT id FROM orders WHERE status = ? AND created_at >= datetime('now', ?)").all(status, "-" + Number(maxAgeMinutes || 120) + " minutes");
+}
+
 export function updateStatus(id, status, extra) {
   db.prepare(
     "UPDATE orders SET status = ?, updated_at = datetime('now'), " +

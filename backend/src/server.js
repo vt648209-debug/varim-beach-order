@@ -5,7 +5,7 @@ import { config } from "./config.js";
 import { logger } from "./logger.js";
 import { orderRouter } from "./routes/order.js";
 import { webhookRouter } from "./routes/webhook.js";
-import { paymentRouter } from "./routes/payment.js";
+import { paymentRouter, startTxpgPoller } from "./routes/payment.js";
 
 const app = express();
 
@@ -31,4 +31,5 @@ app.use((err, req, res, next) => {
 
 app.listen(config.port, () => {
   logger.info("Backend listening on port " + config.port);
+  startTxpgPoller();
 });
