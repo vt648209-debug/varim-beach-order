@@ -14,6 +14,18 @@ git log --oneline -1
 cd "$APP/backend" && npm install --omit=dev --no-audit --no-fund >/dev/null 2>&1 && echo "Зависимости обновлены"
 
 echo
+echo "=== 1б. Сертификат НУЦ Минцифры (им подписан сертификат шлюза банка) ==="
+CA=/usr/local/share/ca-certificates/russian_trusted_root_ca.crt
+if [ ! -s "$CA" ]; then
+  curl -fsS -m 30 -o "$CA" https://gu-st.ru/content/lending/russian_trusted_root_ca_pem.crt \
+    && curl -fsS -m 30 -o /usr/local/share/ca-certificates/russian_trusted_sub_ca.crt https://gu-st.ru/content/lending/russian_trusted_sub_ca_pem.crt \
+    && update-ca-certificates >/dev/null && echo "Сертификаты установлены" || echo "Не удалось скачать сертификаты Минцифры"
+else
+  echo "Уже установлен"
+fi
+curl -s -o /dev/null -m 15 -w "Проверка TLS до шлюза: HTTP %{http_code}\n" https://tf.ubrr.ru:23555/mp/
+
+echo
 echo "=== 2. Проверка доступа к шлюзу банка ==="
 read -s -p "Введите пароль логина терминала $LOGIN и нажмите Enter: " PASS; echo
 FOUND=""
@@ -37,11 +49,12 @@ fi
 echo
 echo "=== 3. Шлюз отвечает: $FOUND — записываю настройки ==="
 cp "$ENV" "$ENV.bak.$(date +%Y%m%d%H%M%S)"
-sed -i '/^TXPG_BASE_URL=/d;/^TXPG_USER=/d;/^TXPG_PASSWORD=/d' "$ENV"
+sed -i '/^TXPG_BASE_URL=/d;/^TXPG_USER=/d;/^TXPG_PASSWORD=/d;/^TXPG_CA_FILE=/d' "$ENV"
 {
   echo "TXPG_BASE_URL=$FOUND"
   echo "TXPG_USER=$LOGIN"
   echo "TXPG_PASSWORD=$PASS"
+  echo "TXPG_CA_FILE=/etc/ssl/certs/ca-certificates.crt"
 } >> "$ENV"
 chmod 600 "$ENV"
 systemctl restart varim-backend
