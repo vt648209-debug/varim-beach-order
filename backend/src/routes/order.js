@@ -5,6 +5,7 @@ import { buildSabyPayload } from "../sabyPayloadBuilder.js";
 import { sabyClient } from "../sabyClient.js";
 import { saveOrder, getOrderByLocalId, updateStatus } from "../orderStore.js";
 import { logger } from "../logger.js";
+import { paykeeperEnabled, createInvoice } from "../paykeeper.js";
 
 export const orderRouter = Router();
 
@@ -16,6 +17,30 @@ orderRouter.post("/order/create", async (req, res, next) => {
     }
     const order = parsed.data;
     const built = buildSabyPayload(order);
+
+    // Онлайн-оплата картой/СБП через интернет-эквайринг УБРиР (PayKeeper):
+    // заказ сохраняем локально, в СБИС отправляем только после подтверждения оплаты.
+    if (order.payment === "card" && paykeeperEnabled()) {
+      const localId = uuidv4();
+      saveOrder({ id: localId, externalId: null, status: "awaiting_payment", payload: { order: order, total: built.total }, sabyResponse: {} });
+      let invoice;
+      try {
+        invoice = await createInvoice({
+          orderId: localId,
+          amount: built.total,
+          clientName: order.customer.name,
+          phone: order.customer.phone,
+          serviceName: "Varim пляжная доставка: " + built.payload.nomenclatures.map(function (n) { return n.name + " x" + n.count; }).join(", ").slice(0, 200),
+        });
+      } catch (err) {
+        logger.error({ err: err.message, localId: localId }, "PayKeeper: не удалось создать счёт");
+        updateStatus(localId, "payment_init_failed", { error: err.message });
+        return res.status(502).json({ error: "payment_unavailable", message: "Не удалось открыть оплату. Попробуйте ещё раз" });
+      }
+      updateStatus(localId, "awaiting_payment", { paykeeperInvoiceId: invoice.invoiceId });
+      return res.status(201).json({ orderId: localId, status: "awaiting_payment", total: built.total, paymentLink: invoice.link });
+    }
+
     const payload = built.payload;
     const total = built.total;
 
@@ -52,6 +77,9 @@ orderRouter.get("/order/:id", async (req, res, next) => {
   try {
     const local = getOrderByLocalId(req.params.id);
     if (!local) return res.status(404).json({ error: "not_found" });
+    if (!local.external_id) {
+      return res.json({ orderId: local.id, externalId: null, status: local.status });
+    }
 
   try {
     const state = await sabyClient.getOrderState(local.external_id);
