@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Varim · доставка на пляж</title>
+<title>Varim · доставка по городу</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -96,13 +96,7 @@
     font-family:'Manrope';font-size:15px;background:var(--foam);color:var(--ink);
   }
   .field input:focus,.field textarea:focus{outline:none;border-color:var(--water)}.field input.err,.field textarea.err{border-color:#e0483f}.errmsg{color:#e0483f;font-size:12px;margin-top:4px;font-weight:600}.formbanner{background:#fdeceb;color:#b23327;border:1px solid #f3c6c2;border-radius:12px;padding:12px 14px;font-size:13px;font-weight:600;margin-bottom:14px}
-  .zones{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-  .zone{
-    border:1.5px solid var(--line);border-radius:13px;padding:12px;background:var(--foam);
-    cursor:pointer;font-size:13px;font-weight:600;text-align:left;color:var(--ink);
-  }
-  .zone .ico{font-size:18px;display:block;margin-bottom:4px}
-  .zone.sel{border-color:var(--water);background:#eef7f8}
+
   .pays{display:flex;gap:8px}
   .pay{flex:1;border:1.5px solid var(--line);border-radius:13px;padding:12px;background:var(--foam);cursor:pointer;font-size:13px;font-weight:600;text-align:center;color:var(--ink)}
   .pay.sel{border-color:var(--water);background:#eef7f8}
@@ -128,6 +122,21 @@
   details.dev pre{margin:0;padding:0 16px 16px;font-size:11px;line-height:1.5;white-space:pre-wrap;word-break:break-word;overflow-x:auto}
   details.dev .lbl{color:#ffb38a;font-weight:700;display:block;margin:10px 0 4px;font-family:'Manrope';font-size:12px}
   .foot{text-align:center;font-size:11px;color:var(--ink-soft);padding:14px;opacity:.7}
+
+  /* ---------- АДРЕС: улица + дом ---------- */
+  .addr-row{display:flex;gap:10px;align-items:flex-start}
+  .addr-row .field{position:relative}
+  .addr-street{flex:1 1 auto;min-width:0}
+  .addr-house{flex:0 0 96px;width:96px}
+  .addr-hint{font-size:12px;color:var(--ink-soft);margin-top:8px;line-height:1.4}
+  .ac{position:absolute;left:0;right:0;top:100%;z-index:40;background:var(--foam);border:1px solid var(--line);
+      border-radius:14px;box-shadow:0 10px 24px rgba(36,26,18,.16);margin-top:6px;display:none;
+      max-height:240px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+  .ac.show{display:block}
+  .ac-item{padding:11px 14px;font-size:15px;color:var(--ink);cursor:pointer;border-bottom:1px solid var(--line)}
+  .ac-item:last-child{border-bottom:none}
+  .ac-item.on,.ac-item:hover{background:var(--sand)}
+  .ac-empty{padding:11px 14px;font-size:13px;color:var(--ink-soft)}
 </style>
 </head>
 <body>
@@ -167,19 +176,31 @@
   <header>
     <button class="back" onclick="goMenu()">‹ Назад в меню</button>
     <div class="brand" style="font-size:22px">Куда везти?</div>
-    <div class="tagline">Найдём тебя на пляже за пару минут</div>
+    <div class="tagline">Привезём по адресу — обычно за 15–20 минут</div>
     <svg class="wave" viewBox="0 0 480 30" preserveAspectRatio="none"><path d="M0 18 Q60 4 120 18 T240 18 T360 18 T480 18 V30 H0 Z" fill="#faf3e6"/></svg>
   </header>
   <div class="checkout-pad">
     <div class="sec">
-      <h3>Зона на пляже</h3>
-      <div class="zones" id="zones"></div>
+      <h3>Адрес доставки</h3>
+      <div class="addr-row">
+        <div class="field addr-street">
+          <label>Улица</label>
+          <input id="street" placeholder="Начни вводить: Лен…" autocomplete="off" autocapitalize="words" spellcheck="false">
+          <div class="ac" id="street-ac"></div>
+        </div>
+        <div class="field addr-house">
+          <label>Дом</label>
+          <input id="house" placeholder="5" inputmode="numeric" autocomplete="off">
+          <div class="ac" id="house-ac"></div>
+        </div>
+      </div>
+      <div class="addr-hint" id="addr-hint">Белая Холуница · подсказываем улицы и номера домов</div>
     </div>
     <div class="sec">
-      <h3>Как тебя найти</h3>
+      <h3>Уточнения</h3>
       <div class="field">
-        <label>Ориентир — что на тебе / зонт / компания</label>
-        <input id="landmark" placeholder="Напр.: синий зонт у вышки, нас трое">
+        <label>Квартира / подъезд / этаж — необязательно</label>
+        <input id="landmark" placeholder="Напр.: кв. 12, подъезд 2">
       </div>
     </div>
     <div class="sec">
@@ -226,7 +247,7 @@
     </div>
     <div class="badge">✓ Заказ принят</div>
     <h2>Лодка вышла!</h2>
-    <p>Бариста уже готовит. Курьер заберёт заказ и привезёт его на пляж.</p>
+    <p>Бариста уже готовит. Курьер заберёт заказ и привезёт его по адресу.</p>
     <div class="eta" id="eta">⏱ Ориентировочно 15–20 минут</div>
     <button class="ghost" onclick="reset()">Заказать ещё</button>
   </div>
@@ -410,12 +431,9 @@ const MENU = [
   ]}
 ];
 
-const ZONES = [
-  {id:"vyshka", ico:"🛟", nm:"Главный пляж — у вышки"},
-  {id:"pier",   ico:"⚓", nm:"Пирс / лодочная"},
-  {id:"left",   ico:"🌾", nm:"Левый берег, камыши"},
-  {id:"other",  ico:"📍", nm:"Другое (укажу в ориентире)"},
-];
+/* Улицы и дома Белой Холуницы — данные OpenStreetMap (ODbL), 77 улиц / 3167 домов */
+const ADDRESS_BOOK={"Ёлочная улица":["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","19А","20","20А","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","47","49","51","53","55","57","59","61","63","65","67"],"Береговая улица":["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","15А","16","17","19","20","21","22","22А","23","24","25","26","27","28","29","30","31","33","35"],"Валентиновская улица":["2","4"],"Великопольская улица":["1","1А","1Б","2","2А","2Б","3","4","5","6","7","8","9","10","13","15","16","17","18","19","20","22","23","24","25","26","27","28","29","29А","29Б","31","32","34","36","38","40","42","44"],"Восточная улица":["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","21А","22","23","24","25","26","28","30","32"],"Высокая улица":["1","4","5"],"Вятская улица":["1","3","4","4А","5","6","7","8","9","10","12"],"Заозёрная улица":["1","2","4","5","6","7","8","9","10","12","14","16","18","20","22","24","26","28","30"],"Западная улица":["1","1В","2","3","4","5","6","7","7А","7Б","7В","8","9","10","10А","11","12","15А","16","17","17А","17Б","18","19","20","21","22","23","24","25","25А","26","27","31/1","34","35","36","38","39","42","42А","43","44","45","46","47","48","49","50","51","52","52А","53","53А","54","55","56","57","57А","58","59","59Б","61","63","65","67","69","71","72","73","73А","73Б","73В","74","75","76","102","77с1","77с3","77с5"],"Зелёная улица":["1","2","3","4","5","6","8","9","10","11","41"],"Калабинская улица":["1","2","3","4","5","6","7","8","9","10","12","14","16"],"Кирпичная улица":["1","4","5","6"],"Кольцевая улица":["1","1А","2","3","4","5","6","7","8","9","10","11","12/3","13","14","15","16","17","19"],"Коммунистическая улица":["2","3","4","4А","4Б","5","6","7","8","9","10","12","14"],"Комсомольская улица":["1","2","3","4","5","5А","6","7","7А","8","9","9А","10","11","11А","12","13","13А","14","15","15А","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","40","41","42","43","44","45","46","47","48","49","50","51","52","53","55"],"Красноармейская улица":["1","1А","1Б","2","3","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","28А","29","30","30А","30Б","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","52А","53","54","55","56","57","58","59","60","61","62","63","64","65","66","66А","67","68","68А","69","70","71","72","73","74","75","76","77","78","78А","79","80","81","82","83","84","85","86","87","89","91","93","95"],"Лесная улица":["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","18","20","22","24","26"],"Луговая улица":["1","2","2А","3","4А","5","7","9","9А","10","11","12","13","14","15","17","18","19","20","21","22","23","27А","29","31","32","33","35","37","39","49"],"Молодёжная улица":["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","19","21","23","112Б"],"Набережная улица":["1","2","3","4","5","6","7","8","9","10","11","12","13А","13Б","13В","13Г","14","15","16","17","18","19","20","21","23","24","25","26","27","28","29","29А","30","31","32","33","34","35","36","37","38","39","40","41","42","43","45","47","48","48А","49","51","53","55","56А","57","59","61","63","65","69","71","71А","73","75","77","79","79А","81","83","85","87","89","91","93","93А","95","95А","97","99","101"],"Нагорная улица":["1","1А","1Б","2","3","4","6","8"],"Новая улица":["1","1А","1Б","1Г","2","2А","3","4","5","6","7","8","8А","9","10","10А","11","12","13","14","14/1","15","16","17","18","19","20","21","21А","22","23","24","25","26","27","28","29","30","32","34А","36","38","40","42","44","46"],"Октябрьская улица":["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","19А","20","21","22","23","24","25","26","27","28","29","30","31","32","33","33А","34","35","36","37","38","39","40","41","42","43","44","45","47","49","50","51","52А","53","54","55","56","57","57А","58","59","59А","60","61","61А","62","63","64","66","67","68","69","70","71","72","73","74","76","78","80","82","84"],"Октябрьский переулок":["1","3","5","7","9","11"],"Парковая улица":["1","2","2А","3","4","5","6","7","8","9","10","11","12","12А","13","14","14А","15","16","17","18","18А","19","20","21","22"],"Первомайская улица":["2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","31А","32","33","33А","34","35","36","37","39","40","41","42","43","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59","60","61","62","63","64","65","67","69","71","73","75","77","79","81","83","85","87","89","91","93","95","97","99","101","103","105","105А"],"Перспективная улица":["1","2","4","6","8","10","12"],"Пионерская улица":["1","2","3","4","5","5А","6","8","10","11","12","13","14","15","16","18","20","22","24","26"],"Подгорная улица":["1","3","4","5","6","7","8","9","10","11"],"Полевая улица":["1","2","3","5","6","7","8","9","10","11","12","13","14","16","17","18","20","21","22","24","24А","26","26Б","28","28А","30А","32","32А","34","36","36А","38","38А","40","42","42А","43","44","44А","45","46","46А","47","48","48А"],"Поперечная улица":["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","17А","17Б","18","19","20","21","21А","22","23","24","25","25А","26","26А","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","44А","45","47","49","53","55"],"Пролетарская улица":["1","1А","1Б","2","2А","3","4","4А","5","6","7","8","8А","8Б","9","10","10А","11","12","12А","13","14","15","16","17","18","19","20","21","22","22А","23","24","25","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59","60","61","62","63","64","65","66","67","68","69","70","71","72","72А","73","74А","75","76","77","78","79","80","81","83","85","87","89","91","93","1Вк1"],"Профсоюзная улица":["1","2","3","4","5","6","7","8","10","11","11А","12","13","14","15","16","17","18","18А","19","20","21","22","22А","23","23А","24","25","27","29"],"Прудная улица":["13","16","18","20","20А","20Б","20В"],"Радужная улица":["2А","8"],"Речная улица":["1","2","3","4","5","6","7","8","9","10","11","12","13","13А","14","15","16","17","19","20","21","22","23"],"Садовая улица":["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59","59А","60","62","64","66","68"],"Светлая улица":["3","4","6","8","10","12","14"],"Советская улица":["1","1А","2","3","3А","4","5","6","7","8","9","10","11","12","12А","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","55","57","59","60","61","62","63","64","65","66","67","68","69","70","71","72","73","74","75","75А","76","77","78","79","81","82","85","87","88","89","90","91","92","93","94","95","96А","97","98","99","100","101","102","103","104","105","106","107","108","109","110","111","112","113","114","115","116","117","118","119","120","121","122","123","124","126","128","130","132","132А","134","138","140","142","144","146","148","150","152","154","156","158","160","162","164","166","168","170","170А"],"Совхозная улица":["1","2А","7","8","10","11","12","13","14","16","16А","18А","18В","19","20","21","23","25","26","27","29","31","33","35","37","39","41","43","45","47"],"Солнечная улица":["1","3","5","7","9","10","11","12","13","14","15","16","17","19"],"Солнечный переулок":["1","1А","2","3","4","5","5А","6","7","7А","8","9","10","12","13","14","16","18","20"],"Тихая улица":["1"],"Школьная улица":["1","1Б","2","3","4","5А","6","6А","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","28","29","30"],"Юбилейная улица":["1","2","3","4","5","7","9","10","10А","11","12","13","14","14А","15","16","17","18","18А","19","19А","21","22","22Б","23","24","24А","24Б","26","28","28Б","28В","30А","32","32А","33","33В","34","34А","35А","35В","36","36А","37","38","39","40","41","43","43А","44","47","49","35Дс1"],"улица Бастракова":["2","3","4","5","6","7","8","9","10","11","12","13","13А","14","15","15А","16","17","18","19","20","20А","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","53А","54","55","56","57","58","59","61","62","64","66","68","70","72","74","76","78","80","82","84","86","88","90","92","94","96"],"улица Володарского":["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","25А","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","49А","50","50А","51","52","53","54","55","55А","56","57","58","59","60","61","62","63","64","65","66","67","68","69","70","71","72","73","74","75","76","77","78","79","80","81","83","85","87","89","91","93","95","97","99","101","103","105","107","109","111"],"улица Гагарина":["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","43","44","46"],"улица Глазырина":["2","2А","3","4","4А","4Б","5","6","7","7А","7В","8","9","10","11","11А","12","13","14","15","16","17","18","19","20","21","22","24","25","27","28","30","31","32","34","35","35А","35Б","36","37","38","39","40","42","43","44","45","46","47","48","49","50","50А","51","52","52А","53","54","55","56","57","58","59","60","61","63","64","65","66","67","68","69","70","71","72","73","74","75","76","77","78","79","80","81","82","83","84","84А","85","86","87","88","89","90","91","92","93","94","95","96","97","98","99","100","101","102","103","104","105","106","107","108","109","110","111","112","112/2","112/3","112/4","112А","113","114А","115","116","117","118","118А","119","121","123","124","125","126","127","128","129","130","131","132","133","134","135","136","137","139","141","143","145","147","149","151","153","155","157","159","161","163","165","169","171","173","175Б","177","177А","179","179А","181","181А","183","185","187","189","191","193","195","195А","197","199","201","203","205","207","209","211","213","215","217","219","221","223","229","112к1","116к2"],"улица Горбачёва":["1","1А","2А","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","33А","34","35","36","37","38","39","41","42","43","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59","60","61","62","63","64","65","66","67","69","71","73","75"],"улица Дружбы":["1","2","3","4","5","6","8","10","12"],"улица Елькина":["1","2","3","4","5","6","7","8","9","10","11","12","13","14","14А","14Б","16","18","20","20А","22","24","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59","60","61","63","64"],"улица Захваткина":["1","2","3","4","5","6","7","8","9","11","12","13","14","15","16","17","18","19","20","21"],"улица Здравоохранения":["1","2","3","4","14","19","20","21","21А","22","22А","23","24","25","25А","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","54"],"улица Коммунаров":["1","1А","4","5А","6","7","8А","8Б","8В","9","10","11","12","13","14","15","16","17","18","19","21","22","23","24","25","26","26А","27","28","30","31","32","33","34","35","36","37","38","39","40","40А","41","43","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59","60","61","62","63","64","65","66","67","68","69","70","71","72","73","74","75","76","77","78","79","80","81","82","83","84","85","86","87","88","89","90","91","92","92А","93","94","95","96","97","98","99","100","101","102","103","104","106","108","110","112","114","116","118","120","122","124","126","126А","128","130","132","134","136"],"улица Ленина":["2","2А","5","6","6А","7Б","9","10","10А","11","13","15","16","17","18","19","20","20А","21","22","23","24","24А","25","26","27","28","28А","28Д","29","31","33","35","37","39","41","41А","43","45","47","49","51","53","55","58","60","62","64","66","68","70","72","74","76","78","80","82","84","86","88","90","92","94","96","98","100","102","104","106","108","110","112","114","116","32Б1","32Б2","32Б3","5Вс1"],"улица Мелиораторов":["1","2","3","4","5","6","7","8","9","10","11","12","13","15","16","17","18","19","20","21","22","23","24","26"],"улица Механизаторов":["2","2А","3","4","5","6","7","8","10","12","14","16","18","20","20А","22","24","26","28","34"],"улица Мира":["1","2","3","3А","4","5","6","7","8","9","10","11","12","30"],"улица Победы":["6","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","32","34","35","36","37","38","38А","38Б","38Г","39","40","40А","41","42","43","44А","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59","59А","59Б","60","61","61А","62","63","63А","64","64А","65А","66","68","69А","70","71","72Б","73","73А","74","75","76","77","78","78А","78Б","79","80","81","82","83","84","85","86","87","88","90","92","94","96","98","100","102"],"улица Пушкина":["2","4","5","6","7","8","9","10","11","12","14"],"улица Пятова":["9","11","18","20","22","24","26","30","32","34А","36","38"],"улица Салтыкова":["1","2","3","4","5","6","7","8","10","11","12","13","14","15","16","18","19","20","20А","21","22","22А","22Б","22В","23","24","20Ас1","20Ас2","20Ас3","20Ас4","22Ас1"],"улица Свободы":["1","3","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","23А","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","39А","40","41","41А","42","43","44","45","46","47","48","49","50","51","52","53","54","54А","56","58","60","62","64","66"],"улица Смирнова":["3","4","5","6","7","8","9","10","11","12","13","15","16","17","18","20","21","21А","22","23","24","25","27","29","31","32","34","36","38","40","42","44","46","54","57","59","61","63","65","67","69","71","73","75","77","79","80","81","81А","82","83","84","85","86","87","88","89","90","91","92","93","94","95","96","97","98","99","100","100А","101","102","103","104","106","107","108","110","112","114","116","118","120","122","124","126","128","130","132","134","136","138"],"улица Солидарности":["1","3","5","7","9"],"улица Сосновка":["3","9А","12А","13","27","29","31","32","35","37","39","40"],"улица Старикова":["1","1А","2","3","4","4А","5","6","6А","7","8","9","10"],"улица Степана Халтурина":["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","48","50","52"],"улица Строителей":["1","2","3","4","5","6","7А","8","9","9А","10","11","12","13","14","15","16","18","21","9с5"],"улица Труда":["1","2","2А","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","51","18,"],"улица Усатовой":["1","2","3","4","4А","5","5А","6","7","8","9","10","11","12","13","14","15","16","17","18","20","22"],"улица Чапаева":["1","2","4","6","7","8","10","11","12","14","15","16","17","18","19","20","21","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59","60","61","62","63","64","64А","65","66","67","68","69","70","71","72","73","74","75","77","79","81","83","85","87","91","93"],"улица Шамурова":["1","2","3","4","5","5А","6","6А","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","50А","51","52","53","55","57","58","60","62","64","66","68","70","72","74","76","86А"],"улица Энгельса":["1","2А","3","4","5","6","7","8","9","10","11","11А","12","13","14","16","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","39А","40","41","41А","42","42А","43","44","45","46","47","48","49","49А","50","51","53","54","55","57","59","61","63","65","67","69","71","73","75","77","79","81","83","85","87","89"],"улица Энтузиастов":["1","2","3","4","5","6","7","8","8А","9","10","11","14","14А","15","16","16А","17","18","19","21"],"улица Ярцева":["1","2","3","5","6","8","10"]};
+const STREET_NAMES = Object.keys(ADDRESS_BOOK).sort(function(a,b){return a.localeCompare(b,"ru");});
 
 /* Бэкенд на VPS (api.варим-кофе.рф): создаёт заказ в Saby Presto и отдаёт статус */
 const API_BASE = "https://api.xn----7sbfonnmsn9b.xn--p1ai/api";
@@ -448,7 +466,8 @@ function renderGroup(i){
       <button class="add" onclick="chg(SEL['${i.grp}'],1)">+</button>
     </div>`;
 }
-let zone = null, pay = "card"; function normalizePhone(v){var d=(v||"").replace(/[^\d+]/g,"");if(d.indexOf("+")===0){d=d.slice(1);}else if(d[0]==="8"&&d.length===11){d=d.slice(1);}else if(d[0]==="7"&&d.length===11){d=d.slice(1);}if(d.length===10){return "+7"+d;}if(d.length===11&&d[0]==="7"){return "+"+d;}return null;} function isValidPhone(v){var n=normalizePhone(v);return !!n && /^\+7\d{10}$/.test(n);} function clearFieldErrors(){document.querySelectorAll(".field .err").forEach(function(el){el.classList.remove("err");});document.querySelectorAll(".errmsg").forEach(function(el){el.remove();});var b=document.getElementById("formbanner");if(b){b.remove();}} function showFieldError(el,msg){el.classList.add("err");var hint=document.createElement("div");hint.className="errmsg";hint.textContent=msg;el.parentElement.appendChild(hint);el.focus();} function showFormError(msg){var pad=document.querySelector(".checkout-pad");var b=document.createElement("div");b.id="formbanner";b.className="formbanner";b.textContent=msg;pad.insertBefore(b,pad.firstChild);}
+let pay = "card";
+const ADDR = { street: "", house: "" }; function normalizePhone(v){var d=(v||"").replace(/[^\d+]/g,"");if(d.indexOf("+")===0){d=d.slice(1);}else if(d[0]==="8"&&d.length===11){d=d.slice(1);}else if(d[0]==="7"&&d.length===11){d=d.slice(1);}if(d.length===10){return "+7"+d;}if(d.length===11&&d[0]==="7"){return "+"+d;}return null;} function isValidPhone(v){var n=normalizePhone(v);return !!n && /^\+7\d{10}$/.test(n);} function clearFieldErrors(){document.querySelectorAll(".field .err").forEach(function(el){el.classList.remove("err");});document.querySelectorAll(".errmsg").forEach(function(el){el.remove();});var b=document.getElementById("formbanner");if(b){b.remove();}} function showFieldError(el,msg){el.classList.add("err");var hint=document.createElement("div");hint.className="errmsg";hint.textContent=msg;el.parentElement.appendChild(hint);el.focus();} function showFormError(msg){var pad=document.querySelector(".checkout-pad");var b=document.createElement("div");b.id="formbanner";b.className="formbanner";b.textContent=msg;pad.insertBefore(b,pad.firstChild);}
 
 /* ---------- РЕНДЕР МЕНЮ ---------- */
 function renderMenu(){
@@ -484,14 +503,125 @@ function updateCart(){
 /* ---------- ЭКРАНЫ ---------- */
 function show(id){ document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active")); document.getElementById(id).classList.add("active"); window.scrollTo(0,0); }
 function goMenu(){ show("screen-menu"); }
-function goCheckout(){ renderZones(); renderSummary(); show("screen-checkout"); }
-function renderZones(){
-  document.getElementById("zones").innerHTML = ZONES.map(z=>`
-    <button class="zone ${zone===z.id?'sel':''}" onclick="selZone('${z.id}')">
-      <span class="ico">${z.ico}</span>${z.nm}
-    </button>`).join("");
+function goCheckout(){ setupAddress(); renderSummary(); show("screen-checkout"); }
+/* ---------- АДРЕС: автоподсказки улиц и домов ---------- */
+function _baseName(nm){ return nm.replace(/^(улица|ул\.?|переулок|пер\.?|проезд|площадь|пл\.?|шоссе|бульвар|тупик)\s+/i,"").trim(); }
+
+function streetMatches(q){
+  q=(q||"").trim().toLowerCase();
+  if(!q) return STREET_NAMES.slice(0,10);
+  const head=[], tail=[];
+  for(const nm of STREET_NAMES){
+    const low=nm.toLowerCase(), base=_baseName(nm).toLowerCase();
+    if(low.indexOf(q)===0 || base.indexOf(q)===0) head.push(nm);
+    else if(low.indexOf(q)>0 || base.indexOf(q)>0) tail.push(nm);
+  }
+  return head.concat(tail).slice(0,10);
 }
-function selZone(id){ zone=id; renderZones(); }
+function houseMatches(streetName,q){
+  const list=ADDRESS_BOOK[streetName]||[];
+  q=(q||"").trim().toUpperCase().replace(/^Д\.?\s*/,"");
+  if(!q) return list.slice(0,15);
+  return list.filter(function(h){return h.toUpperCase().indexOf(q)===0;}).slice(0,15);
+}
+function _acShow(box,items,onPick,emptyText){
+  box.innerHTML="";
+  if(!items.length){
+    box.innerHTML='<div class="ac-empty">'+(emptyText||"Ничего не нашлось")+'</div>';
+    box.classList.add("show"); return;
+  }
+  items.forEach(function(it,idx){
+    const d=document.createElement("div");
+    d.className="ac-item"+(idx===0?" on":"");
+    d.textContent=it;
+    d.addEventListener("mousedown",function(e){e.preventDefault();});
+    d.addEventListener("click",function(){onPick(it);});
+    box.appendChild(d);
+  });
+  box.classList.add("show");
+}
+function _acHide(box){ box.classList.remove("show"); box.innerHTML=""; }
+function _acMove(box,dir){
+  const items=[].slice.call(box.querySelectorAll(".ac-item"));
+  if(!items.length) return;
+  let i=items.findIndex(function(el){return el.classList.contains("on");});
+  i=(i+dir+items.length)%items.length;
+  items.forEach(function(el,j){el.classList.toggle("on",j===i);});
+  box.dataset.idx=String(i);
+}
+function _acPick(box,onPick){
+  const on=box.querySelector(".ac-item.on")||box.querySelector(".ac-item");
+  if(on) onPick(on.textContent);
+}
+function pickStreet(name){
+  ADDR.street=name; ADDR.house="";
+  document.getElementById("street").value=name;
+  document.getElementById("house").value="";
+  _acHide(document.getElementById("street-ac"));
+  document.getElementById("house").focus();
+  showHouseTips();
+}
+function showHouseTips(){
+  const box=document.getElementById("house-ac");
+  const hs=document.getElementById("house");
+  const list=houseMatches(ADDR.street, hs.value);
+  if(!list.length){ _acHide(box); return; }
+  _acShow(box,list,pickHouse,"Дом не найден — проверьте номер");
+}
+function pickHouse(h){
+  ADDR.house=h;
+  document.getElementById("house").value=h;
+  _acHide(document.getElementById("house-ac"));
+  document.getElementById("landmark").focus();
+}
+function setupAddress(){
+  const st=document.getElementById("street"), hs=document.getElementById("house");
+  if(!st || st.dataset.ready) return;
+  st.dataset.ready="1";
+
+  st.addEventListener("input",function(){
+    ADDR.street=""; ADDR.house=""; hs.value="";
+    _acShow(document.getElementById("street-ac"), streetMatches(st.value), pickStreet,
+            "Улица не найдена — проверьте написание");
+  });
+  st.addEventListener("focus",function(){
+    if(!ADDR.street) _acShow(document.getElementById("street-ac"), streetMatches(st.value), pickStreet);
+  });
+  st.addEventListener("blur",function(){
+    setTimeout(function(){
+      _acHide(document.getElementById("street-ac"));
+      const v=st.value.trim().toLowerCase();
+      if(!ADDR.street && v){
+        const exact=STREET_NAMES.filter(function(n){return n.toLowerCase()===v || _baseName(n).toLowerCase()===v;})[0];
+        if(exact){ ADDR.street=exact; st.value=exact; }
+      }
+    },160);
+  });
+  st.addEventListener("keydown",function(e){
+    const box=document.getElementById("street-ac");
+    if(e.key==="ArrowDown"){ e.preventDefault(); _acMove(box,1); }
+    else if(e.key==="ArrowUp"){ e.preventDefault(); _acMove(box,-1); }
+    else if(e.key==="Enter"){ if(box.classList.contains("show")){ e.preventDefault(); _acPick(box,pickStreet); } }
+    else if(e.key==="Escape"){ _acHide(box); }
+  });
+
+  hs.addEventListener("focus",function(){ if(ADDR.street) showHouseTips(); });
+  hs.addEventListener("input",function(){ if(ADDR.street) showHouseTips(); });
+  hs.addEventListener("blur",function(){
+    setTimeout(function(){
+      _acHide(document.getElementById("house-ac"));
+      const v=hs.value.trim().toUpperCase();
+      if(v && ADDR.street && (ADDRESS_BOOK[ADDR.street]||[]).indexOf(v)>=0){ ADDR.house=v; hs.value=v; }
+    },160);
+  });
+  hs.addEventListener("keydown",function(e){
+    const box=document.getElementById("house-ac");
+    if(e.key==="ArrowDown"){ e.preventDefault(); _acMove(box,1); }
+    else if(e.key==="ArrowUp"){ e.preventDefault(); _acMove(box,-1); }
+    else if(e.key==="Enter"){ if(box.classList.contains("show")){ e.preventDefault(); _acPick(box,pickHouse); } }
+    else if(e.key==="Escape"){ _acHide(box); }
+  });
+}
 function selPay(el){ pay=el.dataset.pay; document.querySelectorAll('.pay').forEach(p=>p.classList.remove('sel')); el.classList.add('sel'); buildDev(); }
 function renderSummary(){
   const rows = cartItems().map(i=>`<div class="srow"><span>${i.nm} × ${i.qty}</span><span>${i.pr*i.qty} ₽</span></div>`).join("");
@@ -500,7 +630,7 @@ function renderSummary(){
 }
 
 /* ---------- ОТПРАВКА ---------- */
-async function sendOrder(){clearFieldErrors();const nameEl=document.getElementById("name");const phoneEl=document.getElementById("phone");const name=nameEl.value.trim();const phoneRaw=phoneEl.value.trim();if(!zone){showFormError("Выбери зону на пляже");return;}if(!name){showFieldError(nameEl,"Укажи имя");return;}if(!phoneRaw){showFieldError(phoneEl,"Укажи телефон");return;}if(!isValidPhone(phoneRaw)){showFieldError(phoneEl,"Введи корректный номер телефона, например +7 900 123-45-67");return;}if(cartSum()<1000){showFormError("Минимальная сумма заказа для доставки — 1000 ₽. Добавь ещё на "+(1000-cartSum())+" ₽");return;}if(!document.getElementById("agree").checked){showFormError("Подтверди согласие с офертой и политикой обработки персональных данных");return;}const phoneNormalized=normalizePhone(phoneRaw);const btn=document.getElementById("sendbar");const originalHTML=btn.innerHTML;btn.disabled=true;btn.innerHTML="<span>Отправляем…</span>";try{const resp=await fetch(API_BASE+"/order/create",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(buildApiPayload(phoneNormalized))});const data=await resp.json().catch(function(){return {};});if(!resp.ok){throw new Error((data&&(data.message||data.error))||"Не удалось создать заказ");}if(data&&data.paymentLink){try{localStorage.setItem("varimPayOrder",data.orderId);}catch(e){}btn.innerHTML="<span>Переходим к оплате…</span>";location.href=data.paymentLink;return;}show("screen-done");const b=document.querySelector(".boat2");b.style.animation="none";void b.offsetWidth;b.style.animation="cross 2.6s ease-in-out forwards";}catch(err){showFormError("Не получилось отправить заказ: "+err.message+". Попробуй ещё раз.");btn.disabled=false;btn.innerHTML=originalHTML;}} function buildApiPayload(phoneOverride){return {zoneId: zone,landmark: document.getElementById("landmark").value.trim(),customer: {name: document.getElementById("name").value.trim() || "Гость",phone: phoneOverride || document.getElementById("phone").value.trim() || "—"},payment: pay,comment: document.getElementById("comment").value.trim(),items: cartItems().map(function(i){return {id: i.id,qty: i.qty};})};} function buildDev(){
+async function sendOrder(){clearFieldErrors();const nameEl=document.getElementById("name");const phoneEl=document.getElementById("phone");const name=nameEl.value.trim();const phoneRaw=phoneEl.value.trim();const stEl=document.getElementById("street"), hsEl=document.getElementById("house");if(!ADDR.street){showFieldError(stEl,"Выберите улицу из подсказок");return;}if(!ADDR.house){showFieldError(hsEl,"Укажите номер дома");return;}if(!name){showFieldError(nameEl,"Укажи имя");return;}if(!phoneRaw){showFieldError(phoneEl,"Укажи телефон");return;}if(!isValidPhone(phoneRaw)){showFieldError(phoneEl,"Введи корректный номер телефона, например +7 900 123-45-67");return;}if(cartSum()<1000){showFormError("Минимальная сумма заказа для доставки — 1000 ₽. Добавь ещё на "+(1000-cartSum())+" ₽");return;}if(!document.getElementById("agree").checked){showFormError("Подтверди согласие с офертой и политикой обработки персональных данных");return;}const phoneNormalized=normalizePhone(phoneRaw);const btn=document.getElementById("sendbar");const originalHTML=btn.innerHTML;btn.disabled=true;btn.innerHTML="<span>Отправляем…</span>";try{const resp=await fetch(API_BASE+"/order/create",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(buildApiPayload(phoneNormalized))});const data=await resp.json().catch(function(){return {};});if(!resp.ok){throw new Error((data&&(data.message||data.error))||"Не удалось создать заказ");}if(data&&data.paymentLink){try{localStorage.setItem("varimPayOrder",data.orderId);}catch(e){}btn.innerHTML="<span>Переходим к оплате…</span>";location.href=data.paymentLink;return;}show("screen-done");const b=document.querySelector(".boat2");b.style.animation="none";void b.offsetWidth;b.style.animation="cross 2.6s ease-in-out forwards";}catch(err){showFormError("Не получилось отправить заказ: "+err.message+". Попробуй ещё раз.");btn.disabled=false;btn.innerHTML=originalHTML;}} function buildApiPayload(phoneOverride){const extra=document.getElementById("landmark").value.trim();return {zoneId:"other",landmark:"Белая Холуница, "+ADDR.street+", д. "+ADDR.house+(extra?", "+extra:""),customer: {name: document.getElementById("name").value.trim() || "Гость",phone: phoneOverride || document.getElementById("phone").value.trim() || "—"},payment: pay,comment: document.getElementById("comment").value.trim(),items: cartItems().map(function(i){return {id: i.id,qty: i.qty};})};} function buildDev(){
 const out=document.getElementById("devout");
 if(cartCnt()===0){ out.textContent="Добавь что-нибудь в корзину и оформи заказ — здесь появится payload."; return; }
 out.innerHTML =
@@ -510,7 +640,7 @@ JSON.stringify(buildApiPayload(),null,2);
 
 function reset(){
   Object.values(ITEM).forEach(i=>i.qty=0);
-  zone=null; pay="card";
+  ADDR.street=""; ADDR.house=""; pay="card";var _st=document.getElementById("street"), _hs=document.getElementById("house");if(_st)_st.value=""; if(_hs)_hs.value="";
   document.getElementById("name").value="";
   document.getElementById("phone").value="";
   document.getElementById("landmark").value="";
