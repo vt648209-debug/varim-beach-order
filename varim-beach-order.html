@@ -518,12 +518,31 @@ function streetMatches(q){
   }
   return head.concat(tail).slice(0,10);
 }
+
+/* точное распознавание улицы по введённому тексту */
+function resolveStreet(text){
+  const v=(text||"").trim().toLowerCase();
+  if(!v) return "";
+  for(const nm of STREET_NAMES){
+    if(nm.toLowerCase()===v || _baseName(nm).toLowerCase()===v) return nm;
+  }
+  return "";
+}
+
+function houseList(street){ return (street && ADDRESS_BOOK[street]) ? ADDRESS_BOOK[street] : []; }
+
 function houseMatches(streetName,q){
-  const list=ADDRESS_BOOK[streetName]||[];
+  const list=houseList(streetName);
   q=(q||"").trim().toUpperCase().replace(/^Д\.?\s*/,"");
   if(!q) return list.slice(0,15);
   return list.filter(function(h){return h.toUpperCase().indexOf(q)===0;}).slice(0,15);
 }
+
+function houseExists(street,val){
+  if(!street || !val) return false;
+  return houseList(street).indexOf(String(val).trim().toUpperCase())>=0;
+}
+
 function _acShow(box,items,onPick,emptyText){
   box.innerHTML="";
   if(!items.length){
@@ -547,40 +566,74 @@ function _acMove(box,dir){
   let i=items.findIndex(function(el){return el.classList.contains("on");});
   i=(i+dir+items.length)%items.length;
   items.forEach(function(el,j){el.classList.toggle("on",j===i);});
-  box.dataset.idx=String(i);
 }
 function _acPick(box,onPick){
   const on=box.querySelector(".ac-item.on")||box.querySelector(".ac-item");
   if(on) onPick(on.textContent);
 }
+
+function addrHint(msg, warn){
+  const el=document.getElementById("addr-hint");
+  if(!el) return;
+  el.textContent=msg;
+  el.style.color = warn ? "#D23A2A" : "";
+}
+
+/* дом доступен только после выбора улицы; список и подсказка зависят от неё */
+function refreshHouseField(){
+  const hs=document.getElementById("house");
+  const box=document.getElementById("house-ac");
+  if(!ADDR.street){
+    hs.value=""; ADDR.house="";
+    hs.placeholder="сначала улица";
+    _acHide(box);
+    addrHint("Белая Холуница · выберите улицу, затем дом");
+    return;
+  }
+  const list=houseList(ADDR.street);
+  hs.placeholder="№";
+  addrHint("Белая Холуница · " + ADDR.street + " · домов: " + list.length);
+  if(box.classList.contains("show")) showHouseTips();
+}
+
 function pickStreet(name){
   ADDR.street=name; ADDR.house="";
   document.getElementById("street").value=name;
   document.getElementById("house").value="";
   _acHide(document.getElementById("street-ac"));
+  refreshHouseField();
   document.getElementById("house").focus();
   showHouseTips();
 }
+
 function showHouseTips(){
   const box=document.getElementById("house-ac");
   const hs=document.getElementById("house");
+  if(!ADDR.street){ _acHide(box); return; }
   const list=houseMatches(ADDR.street, hs.value);
   if(!list.length){ _acHide(box); return; }
-  _acShow(box,list,pickHouse,"Дом не найден — проверьте номер");
+  _acShow(box,list,pickHouse,"Дома с таким номером на этой улице нет");
 }
+
 function pickHouse(h){
   ADDR.house=h;
   document.getElementById("house").value=h;
   _acHide(document.getElementById("house-ac"));
+  addrHint("Белая Холуница · " + ADDR.street + " · дом " + h);
   document.getElementById("landmark").focus();
 }
+
 function setupAddress(){
   const st=document.getElementById("street"), hs=document.getElementById("house");
   if(!st || st.dataset.ready) return;
   st.dataset.ready="1";
+  refreshHouseField();
 
   st.addEventListener("input",function(){
-    ADDR.street=""; ADDR.house=""; hs.value="";
+    const exact=resolveStreet(st.value);
+    ADDR.street=exact;
+    ADDR.house=""; hs.value="";
+    refreshHouseField();
     _acShow(document.getElementById("street-ac"), streetMatches(st.value), pickStreet,
             "Улица не найдена — проверьте написание");
   });
@@ -590,10 +643,9 @@ function setupAddress(){
   st.addEventListener("blur",function(){
     setTimeout(function(){
       _acHide(document.getElementById("street-ac"));
-      const v=st.value.trim().toLowerCase();
-      if(!ADDR.street && v){
-        const exact=STREET_NAMES.filter(function(n){return n.toLowerCase()===v || _baseName(n).toLowerCase()===v;})[0];
-        if(exact){ ADDR.street=exact; st.value=exact; }
+      if(!ADDR.street){
+        const exact=resolveStreet(st.value);
+        if(exact){ ADDR.street=exact; st.value=exact; refreshHouseField(); }
       }
     },160);
   });
@@ -605,13 +657,24 @@ function setupAddress(){
     else if(e.key==="Escape"){ _acHide(box); }
   });
 
-  hs.addEventListener("focus",function(){ if(ADDR.street) showHouseTips(); });
-  hs.addEventListener("input",function(){ if(ADDR.street) showHouseTips(); });
+  hs.addEventListener("focus",function(){ showHouseTips(); });
+  hs.addEventListener("input",function(){
+    if(!ADDR.street){ ADDR.house=""; _acHide(document.getElementById("house-ac")); return; }
+    const v=hs.value.trim().toUpperCase();
+    ADDR.house = houseExists(ADDR.street, v) ? v : "";
+    showHouseTips();
+  });
   hs.addEventListener("blur",function(){
     setTimeout(function(){
       _acHide(document.getElementById("house-ac"));
+      if(!ADDR.street) return;
       const v=hs.value.trim().toUpperCase();
-      if(v && ADDR.street && (ADDRESS_BOOK[ADDR.street]||[]).indexOf(v)>=0){ ADDR.house=v; hs.value=v; }
+      if(!v){ ADDR.house=""; refreshHouseField(); return; }
+      if(houseExists(ADDR.street, v)){ ADDR.house=v; hs.value=v; refreshHouseField(); }
+      else {
+        ADDR.house="";
+        addrHint("Дома " + v + " нет на этой улице — выберите из подсказок", true);
+      }
     },160);
   });
   hs.addEventListener("keydown",function(e){
@@ -622,6 +685,7 @@ function setupAddress(){
     else if(e.key==="Escape"){ _acHide(box); }
   });
 }
+
 function selPay(el){ pay=el.dataset.pay; document.querySelectorAll('.pay').forEach(p=>p.classList.remove('sel')); el.classList.add('sel'); buildDev(); }
 function renderSummary(){
   const rows = cartItems().map(i=>`<div class="srow"><span>${i.nm} × ${i.qty}</span><span>${i.pr*i.qty} ₽</span></div>`).join("");
@@ -630,7 +694,7 @@ function renderSummary(){
 }
 
 /* ---------- ОТПРАВКА ---------- */
-async function sendOrder(){clearFieldErrors();const nameEl=document.getElementById("name");const phoneEl=document.getElementById("phone");const name=nameEl.value.trim();const phoneRaw=phoneEl.value.trim();const stEl=document.getElementById("street"), hsEl=document.getElementById("house");if(!ADDR.street){showFieldError(stEl,"Выберите улицу из подсказок");return;}if(!ADDR.house){showFieldError(hsEl,"Укажите номер дома");return;}if(!name){showFieldError(nameEl,"Укажи имя");return;}if(!phoneRaw){showFieldError(phoneEl,"Укажи телефон");return;}if(!isValidPhone(phoneRaw)){showFieldError(phoneEl,"Введи корректный номер телефона, например +7 900 123-45-67");return;}if(cartSum()<1000){showFormError("Минимальная сумма заказа для доставки — 1000 ₽. Добавь ещё на "+(1000-cartSum())+" ₽");return;}if(!document.getElementById("agree").checked){showFormError("Подтверди согласие с офертой и политикой обработки персональных данных");return;}const phoneNormalized=normalizePhone(phoneRaw);const btn=document.getElementById("sendbar");const originalHTML=btn.innerHTML;btn.disabled=true;btn.innerHTML="<span>Отправляем…</span>";try{const resp=await fetch(API_BASE+"/order/create",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(buildApiPayload(phoneNormalized))});const data=await resp.json().catch(function(){return {};});if(!resp.ok){throw new Error((data&&(data.message||data.error))||"Не удалось создать заказ");}if(data&&data.paymentLink){try{localStorage.setItem("varimPayOrder",data.orderId);}catch(e){}btn.innerHTML="<span>Переходим к оплате…</span>";location.href=data.paymentLink;return;}show("screen-done");const b=document.querySelector(".boat2");b.style.animation="none";void b.offsetWidth;b.style.animation="cross 2.6s ease-in-out forwards";}catch(err){showFormError("Не получилось отправить заказ: "+err.message+". Попробуй ещё раз.");btn.disabled=false;btn.innerHTML=originalHTML;}} function buildApiPayload(phoneOverride){const extra=document.getElementById("landmark").value.trim();return {zoneId:"other",landmark:"Белая Холуница, "+ADDR.street+", д. "+ADDR.house+(extra?", "+extra:""),customer: {name: document.getElementById("name").value.trim() || "Гость",phone: phoneOverride || document.getElementById("phone").value.trim() || "—"},payment: pay,comment: document.getElementById("comment").value.trim(),items: cartItems().map(function(i){return {id: i.id,qty: i.qty};})};} function buildDev(){
+async function sendOrder(){clearFieldErrors();const nameEl=document.getElementById("name");const phoneEl=document.getElementById("phone");const name=nameEl.value.trim();const phoneRaw=phoneEl.value.trim();const stEl=document.getElementById("street"), hsEl=document.getElementById("house");if(!ADDR.street){showFieldError(stEl,"Выберите улицу из подсказок");return;}if(!ADDR.house){showFieldError(hsEl,"Укажите номер дома");return;}if(!houseExists(ADDR.street,ADDR.house)){showFieldError(hsEl,"Такого дома нет на выбранной улице");return;}if(!name){showFieldError(nameEl,"Укажи имя");return;}if(!phoneRaw){showFieldError(phoneEl,"Укажи телефон");return;}if(!isValidPhone(phoneRaw)){showFieldError(phoneEl,"Введи корректный номер телефона, например +7 900 123-45-67");return;}if(cartSum()<1000){showFormError("Минимальная сумма заказа для доставки — 1000 ₽. Добавь ещё на "+(1000-cartSum())+" ₽");return;}if(!document.getElementById("agree").checked){showFormError("Подтверди согласие с офертой и политикой обработки персональных данных");return;}const phoneNormalized=normalizePhone(phoneRaw);const btn=document.getElementById("sendbar");const originalHTML=btn.innerHTML;btn.disabled=true;btn.innerHTML="<span>Отправляем…</span>";try{const resp=await fetch(API_BASE+"/order/create",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(buildApiPayload(phoneNormalized))});const data=await resp.json().catch(function(){return {};});if(!resp.ok){throw new Error((data&&(data.message||data.error))||"Не удалось создать заказ");}if(data&&data.paymentLink){try{localStorage.setItem("varimPayOrder",data.orderId);}catch(e){}btn.innerHTML="<span>Переходим к оплате…</span>";location.href=data.paymentLink;return;}show("screen-done");const b=document.querySelector(".boat2");b.style.animation="none";void b.offsetWidth;b.style.animation="cross 2.6s ease-in-out forwards";}catch(err){showFormError("Не получилось отправить заказ: "+err.message+". Попробуй ещё раз.");btn.disabled=false;btn.innerHTML=originalHTML;}} function buildApiPayload(phoneOverride){const extra=document.getElementById("landmark").value.trim();return {zoneId:"other",landmark:"Белая Холуница, "+ADDR.street+", д. "+ADDR.house+(extra?", "+extra:""),customer: {name: document.getElementById("name").value.trim() || "Гость",phone: phoneOverride || document.getElementById("phone").value.trim() || "—"},payment: pay,comment: document.getElementById("comment").value.trim(),items: cartItems().map(function(i){return {id: i.id,qty: i.qty};})};} function buildDev(){
 const out=document.getElementById("devout");
 if(cartCnt()===0){ out.textContent="Добавь что-нибудь в корзину и оформи заказ — здесь появится payload."; return; }
 out.innerHTML =
@@ -640,7 +704,7 @@ JSON.stringify(buildApiPayload(),null,2);
 
 function reset(){
   Object.values(ITEM).forEach(i=>i.qty=0);
-  ADDR.street=""; ADDR.house=""; pay="card";var _st=document.getElementById("street"), _hs=document.getElementById("house");if(_st)_st.value=""; if(_hs)_hs.value="";
+  ADDR.street=""; ADDR.house=""; pay="card"; refreshHouseField();var _st=document.getElementById("street"), _hs=document.getElementById("house");if(_st)_st.value=""; if(_hs)_hs.value="";
   document.getElementById("name").value="";
   document.getElementById("phone").value="";
   document.getElementById("landmark").value="";
