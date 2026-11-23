@@ -969,6 +969,8 @@ const ADDR = { street:"", house:"" };
 /* ---------- корзина ---------- */
 function cartItems(){ return Object.values(ITEM).filter(function(i){ return i.qty>0; }); }
 function cartSum(){ return cartItems().reduce(function(s,i){ return s + i.pr*i.qty; }, 0); }
+function deliveryFee(){ var s = cartSum(); return (s > 0 && s < 1000) ? 250 : 0; }
+function orderTotal(){ return cartSum() + deliveryFee(); }
 function cartCnt(){ return cartItems().reduce(function(s,i){ return s + i.qty; }, 0); }
 function money(n){ return n.toLocaleString("ru-RU"); }
 
@@ -980,7 +982,7 @@ function chg(id, d){
 }
 
 function updateCart(){
-  const cnt = cartCnt(), sum = cartSum();
+  const cnt = cartCnt(), sum = orderTotal();
   document.getElementById("cart-cnt").textContent = cnt;
   document.getElementById("cart-sum").textContent = money(sum);
   document.getElementById("cartbar").disabled = cnt === 0;
@@ -1060,9 +1062,11 @@ function renderSummary(){
   const rows = cartItems().map(function(i){
     return '<div class="srow"><span>'+i.nm+' × '+i.qty+'</span><span>'+money(i.pr*i.qty)+' ₽</span></div>';
   }).join("");
+  var fee = deliveryFee();
   document.getElementById("summary").innerHTML = rows
-    + '<div class="srow tot"><span>Итого</span><span>'+money(cartSum())+' ₽</span></div>';
-  document.getElementById("send-sum").textContent = money(cartSum()) + " ₽";
+    + (fee ? '<div class="srow"><span>Доставка' + (cartSum() < 1000 ? " (заказ до 1000 ₽)" : "") + '</span><span>'+money(fee)+' ₽</span></div>' : '')
+    + '<div class="srow tot"><span>Итого</span><span>'+money(orderTotal())+' ₽</span></div>';
+  document.getElementById("send-sum").textContent = money(orderTotal()) + " ₽";
 }
 
 /* ---------- адрес: автоподсказки ---------- */
@@ -1276,6 +1280,7 @@ function buildApiPayload(phoneOverride){
       phone: phoneOverride || document.getElementById("phone").value.trim() || "—"
     },
     payment: pay,
+    deliveryFee: deliveryFee(),
     comment: document.getElementById("comment").value.trim(),
     items: cartItems().map(function(i){ return { id: i.id, qty: i.qty }; })
   };
@@ -1301,7 +1306,6 @@ async function sendOrder(){
   if(!name){ fieldError(nameEl, "Укажите имя"); return; }
   const phoneNorm = normalizePhone(phoneEl.value.trim());
   if(!phoneNorm){ fieldError(phoneEl, "Введите корректный номер, например +7 900 123-45-67"); return; }
-  if(cartSum() < 1000){ formError("Минимальная сумма заказа — 1000 ₽. Добавьте ещё на " + (1000 - cartSum()) + " ₽"); return; }
   if(!document.getElementById("agree").checked){ formError("Подтвердите согласие с офертой"); return; }
 
   const btn = document.getElementById("sendbar");
@@ -1352,6 +1356,17 @@ document.getElementById("chips").addEventListener("click", function(e){
   const sec = document.getElementById("cat-" + chip.dataset.cat);
   if(sec) sec.scrollIntoView({ behavior:"smooth", block:"start" });
 });
+document.getElementById("chips").addEventListener("wheel", function(e){
+  var el = document.getElementById("chips");
+  var d = e.deltaX || e.deltaY;
+  if(!d) return;
+  var atStart = el.scrollLeft <= 0;
+  var atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 1;
+  if((d < 0 && atStart) || (d > 0 && atEnd)) return;
+  e.preventDefault();
+  el.scrollLeft += d;
+}, { passive: false });
+
 document.getElementById("search").addEventListener("input", function(e){
   renderMenu(e.target.value);
 });
