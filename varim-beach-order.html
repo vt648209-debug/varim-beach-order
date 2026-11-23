@@ -568,6 +568,8 @@ function renderChips(){
 function show(id){
   document.querySelectorAll(".screen").forEach(function(s){ s.classList.remove("active"); });
   document.getElementById(id).classList.add("active");
+  const bar = document.getElementById("cartbar");
+  if(bar) bar.style.display = (id === "screen-menu") ? "flex" : "none";
   window.scrollTo(0,0);
 }
 function goCheckout(){
